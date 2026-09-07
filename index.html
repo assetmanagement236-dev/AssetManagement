@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Equipment & Asset Management System</title>
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="pb-5">
+
+    <!-- Header / Navbar -->
+    <nav class="navbar navbar-custom py-3 mb-4">
+        <div class="container-fluid px-4">
+            <span class="navbar-brand mb-0 h1 text-white fw-bold d-flex align-items-center">
+                <i class="bi bi-shield-check me-2 fs-3 text-info"></i> Equipment & Asset Management System
+            </span>
+            <div class="d-flex align-items-center">
+                <!-- Firebase Connection Badge -->
+                <span id="firebaseStatusBadge" class="badge bg-secondary me-2 style-cursor-pointer" onclick="openFirebaseModal()" title="Click to configure Firebase">
+                    <i class="bi bi-hdd-network me-1"></i> Local Mode
+                </span>
+                
+                <button id="pwaInstallBtn" class="btn btn-outline-success btn-sm me-2 d-none" onclick="installPWA()"><i class="bi bi-phone-vibrate me-1"></i> Install Mobile App</button>
+                <button class="btn btn-outline-info btn-sm me-2" onclick="openFirebaseModal()"><i class="bi bi-cloud-upload me-1"></i> Firebase Connect</button>
+                <button class="btn btn-outline-light btn-sm me-2" onclick="openExportModal()"><i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV Report</button>
+                <button class="btn btn-outline-warning btn-sm" onclick="triggerResetWorkflow()"><i class="bi bi-arrow-counterclockwise me-1"></i> Reset Movement Logs</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4">
+        <div class="row">
+            
+            <!-- LEFT PANEL: Master Inventory & Stock Status -->
+            <div class="col-lg-5">
+                
+                <!-- Master Entry Form -->
+                <div class="card">
+                    <div class="card-header"><i class="bi bi-plus-circle me-2 text-primary"></i>1. Add New Master Equipment / Accessory</div>
+                    <div class="card-body">
+                        <form id="masterForm" onsubmit="addMasterItem(event)">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Item Category / Type</label>
+                                <select id="m_type" class="form-select" onchange="toggleItemTypeFields()" required>
+                                    <option value="EQUIPMENT">Main Equipment (With Serial No.)</option>
+                                    <option value="ACCESSORY">Accessory / Consumable (Quantity Only)</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3 position-relative">
+                                <label class="form-label fw-semibold">Item Name</label>
+                                <div class="input-group">
+                                    <input type="text" id="m_name" class="form-control" placeholder="Type or search item name..." autocomplete="off" onkeyup="filterSuggestions()" onfocus="filterSuggestions()" required>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="openManageSuggestionsModal()" title="Manage Saved Suggestions">
+                                        <i class="bi bi-gear-fill text-dark"></i>
+                                    </button>
+                                </div>
+                                <div id="custom_suggestion_box" class="suggestion-box d-none"></div>
+                                <small class="text-muted" style="font-size: 0.72rem;">* গিয়ার আইকনে ক্লিক করে সাজেস্টেড নাম ম্যানেজ করা যাবে</small>
+                            </div>
+
+                            <!-- EQUIPMENT FIELDS -->
+                            <div id="equipment_fields">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Office Serial Number</label>
+                                    <input type="text" id="m_serial" class="form-control" placeholder="e.g. TS-101, LP-202">
+                                    <small class="text-muted" style="font-size: 0.75rem;">* সিরিয়াল নম্বর ইউনিক হতে হবে</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Initial Equipment Condition</label>
+                                    <select id="m_condition" class="form-select">
+                                        <option value="Good">Good (Working fine)</option>
+                                        <option value="Minor Fault">Minor Fault (Has minor issues)</option>
+                                        <option value="Damaged">Damaged / Needs Repair</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Problem / Condition Details (If any)</label>
+                                    <textarea id="m_problems" class="form-control" rows="2" placeholder="Describe any existing defects..."></textarea>
+                                </div>
+                            </div>
+
+                            <!-- ACCESSORY FIELDS -->
+                            <div id="accessory_fields" class="d-none">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Total Quantity (সংখ্যা)</label>
+                                    <input type="number" id="m_qty" class="form-control" min="1" placeholder="e.g. 5, 10, 50">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-custom-primary w-100"><i class="bi bi-node-plus me-1"></i> Add to Master Inventory</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Live Stock Summary -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-pie-chart me-2 text-success"></i>Stock Summary (Auto Calculated)</span>
+                        <span class="badge bg-secondary" id="totalEquipmentTypes">0 Types</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-custom table-hover align-middle mb-0" id="summaryTable">
+                                <thead>
+                                    <tr>
+                                        <th>Item Name</th>
+                                        <th class="text-center">Total Quantity</th>
+                                        <th class="text-center">Available Stock</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Master Stock Table -->
+                <div class="card">
+                    <div class="card-header"><i class="bi bi-list-stars me-2 text-info"></i>Part 1: Master Stock Inventory</div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height: 380px; overflow-y: auto;">
+                            <table class="table table-custom table-hover align-middle mb-0" id="masterTable">
+                                <thead>
+                                    <tr>
+                                        <th>Type / Serial</th>
+                                        <th>Item Name</th>
+                                        <th>Condition / Details</th>
+                                        <th>Status / Qty</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT PANEL: Allocation, Issue, Lost Tracking & Logs -->
+            <div class="col-lg-7">
+                
+                <!-- Nav Tabs for Operations -->
+                <ul class="nav nav-tabs mb-3" id="opTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="issue-tab" data-bs-toggle="tab" data-bs-target="#issue-panel" type="button"><i class="bi bi-send me-2"></i>2. Issue Multiple Equipment / Accessories</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link text-danger" id="lost-tab" data-bs-toggle="tab" data-bs-target="#lost-panel" type="button"><i class="bi bi-exclamation-triangle me-2"></i>3. Report Lost Item</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="opTabContent">
+                    
+                    <!-- TAB 1: Multi-Item Issue Form -->
+                    <div class="tab-pane fade show active" id="issue-panel" role="tabpanel">
+                        <div class="card">
+                            <div class="card-header"><i class="bi bi-send me-2 text-primary"></i>Issue Equipment to Field Team</div>
+                            <div class="card-body">
+                                <form id="issueForm" onsubmit="issueEquipment(event)">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Issue Date</label>
+                                            <input type="date" id="i_date" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Team Leader / Issuer</label>
+                                            <input type="text" id="i_leader" class="form-control" placeholder="Leader Full Name" required>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Equipment Receiver Person</label>
+                                            <input type="text" id="i_receiver" class="form-control" placeholder="Person receiving equipment" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Project ID / Location</label>
+                                            <input type="text" id="i_project_id" class="form-control" placeholder="e.g. PRJ-2026-01 (Site Loc)" required>
+                                        </div>
+                                        
+                                        <!-- Multiple Team Members Section -->
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold">Team Members / Assistants (Multiple)</label>
+                                            <div class="input-group mb-2">
+                                                <input type="text" id="member_input" class="form-control" placeholder="Enter member name and click Add">
+                                                <button class="btn btn-outline-secondary" type="button" onclick="addTeamMember()"><i class="bi bi-person-plus me-1"></i> Add Member</button>
+                                            </div>
+                                            <div id="team_members_container" class="p-2 border rounded bg-light min-height-50">
+                                                <small class="text-muted" id="empty_member_text">No additional members added yet.</small>
+                                            </div>
+                                        </div>
+
+                                        <!-- MULTI-ITEM SELECTION SECTION -->
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold text-primary">
+                                                <i class="bi bi-check2-square me-1"></i> Select Items & Quantities to Issue (একাধিক সিলেক্ট করুন)
+                                            </label>
+                                            <div class="item-selection-container" id="multi_item_container">
+                                                <!-- Dynamic Items Checkboxes & Quantity Input -->
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold">Remarks / Issue Purpose</label>
+                                            <input type="text" id="i_remarks" class="form-control" placeholder="Additional purpose or site notes...">
+                                        </div>
+
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-custom-primary w-100 py-2 fw-bold"><i class="bi bi-check-circle me-1"></i> Confirm & Issue Selected Items</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: Report Lost Form -->
+                    <div class="tab-pane fade" id="lost-panel" role="tabpanel">
+                        <div class="card border-danger">
+                            <div class="card-header bg-danger text-white"><i class="bi bi-exclamation-octagon me-2"></i>Report Lost / Missing Item</div>
+                            <div class="card-body">
+                                <form id="lostForm" onsubmit="reportLostEquipment(event)">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Date of Occurrence / Loss</label>
+                                            <input type="date" id="l_date" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Person Responsible / In-Charge</label>
+                                            <input type="text" id="l_person" class="form-control" placeholder="Name of person held responsible" required>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Item Name</label>
+                                            <select id="l_name" class="form-select" onchange="updateLostSerialDropdown()" required>
+                                                <option value="">-- Select Item --</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Serial Number / Item Reference</label>
+                                            <select id="l_serial" class="form-select" required>
+                                                <option value="">-- Select Serial --</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold">How it was lost / Incident Details</label>
+                                            <textarea id="l_incident" class="form-control" rows="2" placeholder="Explain how, where, or under what circumstances it was lost..." required></textarea>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <label class="form-label fw-semibold">FIR / Police Incident Report No (If any)</label>
+                                            <input type="text" id="l_fir" class="form-control" placeholder="e.g. GD-102938 / N/A">
+                                        </div>
+                                        
+                                        <!-- UPDATED COMPENSATION & FINE SECTION -->
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Recovery / Action Status</label>
+                                            <select id="l_recovery" class="form-select" required>
+                                                <option value="Under Investigation">Under Investigation</option>
+                                                <option value="Pending Salary Deduction">Pending Salary Deduction</option>
+                                                <option value="Compensated / Fined">Compensated / Fined</option>
+                                                <option value="Written Off">Company Written Off</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Fine / Compensation Amount</label>
+                                            <input type="text" id="l_fine_amount" class="form-control" placeholder="e.g. 5000 Tk, $50 or N/A">
+                                        </div>
+
+                                        <div class="col-12">
+                                            <div class="alert alert-warning py-2 mb-0 small">
+                                                <i class="bi bi-exclamation-triangle-fill me-1"></i> <b>Warning:</b> Submitting this report will automatically remove this item permanently from Stock!
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-danger w-100 py-2"><i class="bi bi-trash3 me-1"></i> Submit Lost Report & Remove From Stock</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- PART 2 LOGS (SPLIT INTO TWO TABLES) -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold m-0 text-primary"><i class="bi bi-journal-text me-2"></i>Part 2: Movement Logs & History</h5>
+                    <input type="text" id="searchLog" class="form-control form-control-sm w-auto" placeholder="Search all logs..." onkeyup="renderLogs()">
+                </div>
+
+                <!-- 2.1: Currently Issued / Return Pending Items -->
+                <div class="card border-warning mb-4">
+                    <div class="card-header bg-warning bg-opacity-10 text-dark d-flex justify-content-between align-items-center">
+                        <span class="fw-bold text-dark"><i class="bi bi-hourglass-split me-2 text-warning"></i>2.1 Return Pending / Currently Issued Items</span>
+                        <span class="badge bg-warning text-dark" id="pendingCount">0 Pending</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-custom table-hover align-middle mb-0" id="pendingLogTable">
+                                <thead>
+                                    <tr>
+                                        <th>Issue Date</th>
+                                        <th>Project & Location</th>
+                                        <th>People Involved</th>
+                                        <th>Item & Serial</th>
+                                        <th>Issue Condition</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.2: Already Returned & Incident History -->
+                <div class="card border-success">
+                    <div class="card-header bg-success bg-opacity-10 text-dark d-flex justify-content-between align-items-center">
+                        <span class="fw-bold text-dark"><i class="bi bi-check2-circle me-2 text-success"></i>2.2 Returned & Incident History Logs</span>
+                        <span class="badge bg-success" id="returnedCount">0 History Records</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-custom table-hover align-middle mb-0" id="returnedLogTable">
+                                <thead>
+                                    <tr>
+                                        <th>Dates / Type</th>
+                                        <th>Project</th>
+                                        <th>People Involved</th>
+                                        <th>Item & Serial</th>
+                                        <th>Return Condition / Details</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MANAGE SUGGESTIONS MODAL -->
+    <div class="modal fade" id="manageSuggestionsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-secondary text-white py-2">
+                    <h6 class="modal-title fw-bold"><i class="bi bi-list-stars me-2"></i>Manage Item Name Suggestions</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="list-group list-group-flush" id="suggestionListContainer"></div>
+                </div>
+                <div class="modal-footer py-1">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RETURN SINGLE EQUIPMENT MODAL -->
+    <div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title fw-bold" id="returnModalLabel"><i class="bi bi-box-arrow-in-left me-2"></i>Return Single Item & Update Condition</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="returnForm" onsubmit="submitReturn(event)">
+                        <input type="hidden" id="modal_log_id">
+
+                        <div class="row g-3 mb-3 p-3 bg-light rounded border">
+                            <div class="col-md-6"><strong>Item Name:</strong> <span id="modal_eq_name" class="fw-bold"></span></div>
+                            <div class="col-md-6"><strong>Serial / Reference:</strong> <span id="modal_eq_serial" class="fw-bold text-primary"></span></div>
+                            <div class="col-md-6"><strong>Project/Location:</strong> <span id="modal_project_id"></span></div>
+                            <div class="col-md-6"><strong>Receiver (Original):</strong> <span id="modal_issue_receiver" class="fw-bold text-primary"></span></div>
+                            <div class="col-md-6"><strong>Issue Condition:</strong> <span id="modal_issue_cond" class="badge cond-good"></span></div>
+                            <div class="col-md-6"><strong>Issue Details:</strong> <span id="modal_issue_prob" class="text-muted small"></span></div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Return Date</label>
+                                <input type="date" id="r_date" class="form-control" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Person Returning Item</label>
+                                <input type="text" id="r_returner" class="form-control" placeholder="Name of person returning" onkeyup="checkPersonMismatch()" required>
+                            </div>
+
+                            <div class="col-12 d-none" id="mismatch_reason_div">
+                                <div class="p-2 bg-warning bg-opacity-10 border border-warning rounded">
+                                    <label class="form-label fw-semibold text-dark"><i class="bi bi-exclamation-triangle me-1 text-warning"></i> Reason for Person Change</label>
+                                    <input type="text" id="r_mismatch_reason" class="form-control" placeholder="Explain why a different person is returning this item...">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Current Condition Upon Return</label>
+                                <select id="r_condition" class="form-select" required>
+                                    <option value="Good">Good (Working fine)</option>
+                                    <option value="Minor Fault">Minor Fault (Needs minor repair)</option>
+                                    <option value="Damaged">Damaged / Broken</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Updated Problem / Defect Details</label>
+                                <input type="text" id="r_problems" class="form-control" placeholder="Any new defects or faults details...">
+                            </div>
+
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success w-100 py-2 fw-bold"><i class="bi bi-arrow-return-left me-1"></i> Confirm Single Item Return</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXPORT OPTIONS MODAL -->
+    <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold" id="exportModalLabel"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Export CSV Options</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="exportForm" onsubmit="processExport(event)">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Select Month & Year for Report</label>
+                            <input type="month" id="exp_month" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Download Mode / Data Scope</label>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="exportScope" id="scopeAll" value="ALL" checked>
+                                <label class="form-check-label" for="scopeAll">
+                                    <strong>All Records (আগের মাসের সকল হিসাব সহ)</strong>
+                                    <div class="text-muted small">ঐ মাসের পূর্বে এবং চলাকালীন সকল ঐতিহাসিক তথ্য সহ রিপোর্ট ডাউনলোড হবে।</div>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="exportScope" id="scopeNew" value="NEW">
+                                <label class="form-check-label" for="scopeNew">
+                                    <strong>Only New / Un-downloaded Items</strong>
+                                    <div class="text-muted small">আগে যেসব এন্ট্রি ডাউনলোড করা হয়নি শুধুমাত্র নতুনগুলো ডাউনলোড হবে।</div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold"><i class="bi bi-download me-1"></i> Download CSV File</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIREBASE CONFIGURATION MODAL -->
+    <div class="modal fade" id="firebaseModal" tabindex="-1" aria-labelledby="firebaseModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title fw-bold" id="firebaseModalLabel"><i class="bi bi-cloud-plus me-2 text-info"></i>Connect to Firebase Cloud Database</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">
+                        Firebase Project টির Credentials এখানে ইনপুট দিন অথবা <code>firebase-config.js</code> ফাইলে পেস্ট করুন। তথ্য সাবমিট করলে অ্যাপটি রিয়েলটাইম ক্লাউড ডেটাবেসের সাথে সংযুক্ত হবে।
+                    </p>
+                    <form id="firebaseForm" onsubmit="saveFirebaseCredentials(event)">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">API Key</label>
+                                <input type="text" id="fb_apiKey" class="form-control form-control-sm" placeholder="AIzaSy..." required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Project ID</label>
+                                <input type="text" id="fb_projectId" class="form-control form-control-sm" placeholder="your-project-id" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Auth Domain</label>
+                                <input type="text" id="fb_authDomain" class="form-control form-control-sm" placeholder="your-project-id.firebaseapp.com">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Storage Bucket</label>
+                                <input type="text" id="fb_storageBucket" class="form-control form-control-sm" placeholder="your-project-id.appspot.com">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Messaging Sender ID</label>
+                                <input type="text" id="fb_messagingSenderId" class="form-control form-control-sm" placeholder="1234567890">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">App ID</label>
+                                <input type="text" id="fb_appId" class="form-control form-control-sm" placeholder="1:1234567890:web:abc123def456">
+                            </div>
+                        </div>
+
+                        <div class="mt-4 d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="disconnectFirebase()"><i class="bi bi-x-circle me-1"></i> Disconnect / Clear</button>
+                            <button type="submit" class="btn btn-success btn-sm px-4 fw-bold"><i class="bi bi-check-circle me-1"></i> Save & Connect Firebase</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Firebase SDK (Compatibility Libraries) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <!-- Firebase Config Script -->
+    <script src="firebase-config.js"></script>
+
+    <!-- Application Logic -->
+    <script src="app.js"></script>
+</body>
+</html>

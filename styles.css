@@ -1,0 +1,168 @@
+:root {
+  --primary-color: #0f172a;
+  --secondary-color: #334155;
+  --accent-color: #0284c7;
+  --danger-color: #ef4444;
+  --warning-color: #f59e0b;
+  --success-color: #10b981;
+  --bg-color: #f8fafc;
+  --card-bg: #ffffff;
+}
+
+body {
+  background-color: var(--bg-color);
+  font-family:
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  color: #334155;
+}
+
+.navbar-custom {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card {
+  border: none;
+  border-radius: 12px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  margin-bottom: 24px;
+  background: var(--card-bg);
+  transition: all 0.2s ease;
+}
+
+.card-header {
+  background-color: #ffffff;
+  border-bottom: 1.5px solid #f1f5f9;
+  font-weight: 700;
+  color: var(--primary-color);
+  padding: 16px 20px;
+  border-radius: 12px 12px 0 0 !important;
+}
+
+.table-custom th {
+  background-color: #f1f5f9;
+  color: #475569;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-available {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+.badge-issued {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+.badge-lost {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+.badge-accessory {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.team-member-chip {
+  display: inline-block;
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
+
+.condition-badge {
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.cond-good {
+  background: #dcfce7;
+  color: #15803d;
+}
+.cond-minor {
+  background: #fef9c3;
+  color: #854d0e;
+}
+.cond-damaged {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.btn-custom-primary {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  font-weight: 500;
+}
+
+.btn-custom-primary:hover {
+  background-color: #0369a1;
+  color: white;
+}
+
+.nav-tabs .nav-link {
+  color: #64748b;
+  font-weight: 600;
+  border: none;
+  border-bottom: 2px solid transparent;
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--accent-color);
+  border-bottom: 2px solid var(--accent-color);
+  background: transparent;
+}
+
+.suggestion-box {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1050;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 0 0 8px 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.suggestion-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.suggestion-item:hover {
+  background-color: #f1f5f9;
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.item-selection-container {
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 12px;
+  background-color: #f8fafc;
+}
+
+.style-cursor-pointer {
+  cursor: pointer;
+}
