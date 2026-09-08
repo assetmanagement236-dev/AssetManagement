@@ -249,12 +249,45 @@ table td {
 
 /* LAYOUT CANVAS CLEARANCE FIX */
 main {
-  padding-top: 76px !important;
+  padding-top: 80px !important;
 }
 @media (min-width: 768px) {
   main {
-    padding-top: 84px !important;
+    padding-top: 88px !important;
   }
+}
+
+/* CLEAN TAB NAVIGATION OVERRIDES */
+.nav-tabs {
+  border-bottom: none !important;
+}
+.nav-tabs .nav-link {
+  border: none !important;
+  color: #64748b !important;
+  background-color: transparent !important;
+  transition: all 0.2s ease;
+  padding: 8px 14px !important;
+  margin-bottom: 0 !important;
+  border-radius: 8px !important;
+}
+.nav-tabs .nav-link:hover {
+  color: #2563eb !important;
+  background-color: rgba(37, 99, 235, 0.06) !important;
+}
+.nav-tabs .nav-link.active {
+  color: #ffffff !important;
+  background-color: #2563eb !important;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+}
+.nav-tabs .nav-link.text-status-warning.active {
+  color: #ffffff !important;
+  background-color: #d97706 !important;
+  box-shadow: 0 2px 6px rgba(217, 119, 6, 0.25) !important;
+}
+.nav-tabs .nav-link.text-status-alert.active {
+  color: #ffffff !important;
+  background-color: #dc2626 !important;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25) !important;
 }
 
 /* MOBILE RESPONSIVE & TOUCH UTILITIES */

@@ -303,16 +303,18 @@
                             </div>
                             
                             <!-- BOX ACCESSORIES INCLUSION (SET) -->
-                            <div class="mb-3 p-3 bg-surface border border-dashed border-surface-border rounded-xl">
+                            <div class="mb-3 p-3 bg-surface border border-dashed border-surface-border rounded-xl overflow-hidden">
                                 <label class="block text-xs font-bold text-primary mb-1 flex items-center gap-1">
                                     <span class="material-symbols-outlined text-base">inventory_2</span> Equipment Box Items / Set Components
                                 </label>
                                 <small class="text-xs text-text-secondary block mb-2">Enter accessories inside box set (e.g. Battery, Lens, Charger)</small>
                                 
-                                <div class="flex gap-2 mb-2">
-                                    <input type="text" id="box_item_name" class="flex-1 px-2.5 py-1.5 border border-surface-border rounded-lg text-xs bg-background outline-none" placeholder="Box Item (e.g. Battery)">
-                                    <input type="number" id="box_item_qty" class="w-16 px-2 py-1.5 border border-surface-border rounded-lg text-xs bg-background outline-none" min="1" value="1" placeholder="Qty">
-                                    <button class="px-3 py-1.5 bg-primary text-on-primary rounded-lg text-xs font-semibold hover:bg-surface-tint transition-colors shrink-0" type="button" onclick="addBoxItem()"><span class="material-symbols-outlined text-sm block">add</span></button>
+                                <div class="flex items-center gap-1.5 mb-2 w-full overflow-hidden">
+                                    <input type="text" id="box_item_name" class="flex-1 min-w-0 px-2.5 py-1.5 border border-surface-border rounded-lg text-xs bg-background outline-none focus:border-primary" placeholder="Box Item (e.g. Battery)">
+                                    <input type="number" id="box_item_qty" class="w-14 shrink-0 px-2 py-1.5 border border-surface-border rounded-lg text-xs bg-background outline-none focus:border-primary text-center" min="1" value="1" placeholder="Qty">
+                                    <button class="px-3 py-1.5 bg-primary text-on-primary rounded-lg text-xs font-semibold hover:bg-surface-tint transition-colors shrink-0 flex items-center justify-center gap-0.5" type="button" onclick="addBoxItem()">
+                                        <span class="material-symbols-outlined text-sm block">add</span>
+                                    </button>
                                 </div>
                                 <div id="box_items_container" class="mt-2 flex flex-wrap gap-1.5">
                                     <small class="text-xs text-text-secondary" id="empty_box_text">No box items added to set yet.</small>
@@ -399,20 +401,20 @@
         <div class="lg:col-span-7 flex flex-col gap-6">
             
             <!-- Operations Navigation Tabs (Scrollable on Mobile) -->
-            <div class="bg-background border border-surface-border rounded-xl shadow-sm p-1.5">
+            <div class="bg-background border border-surface-border rounded-xl shadow-sm p-1.5 overflow-hidden">
                 <ul class="nav nav-tabs border-0 flex flex-nowrap overflow-x-auto gap-1.5 p-1 bg-surface-container-low rounded-lg no-scrollbar" id="opTab" role="tablist">
-                    <li class="nav-item shrink-0 flex-1 min-w-[130px]" role="presentation">
-                        <button class="nav-link w-full py-2.5 text-xs font-bold rounded-lg active flex items-center justify-center gap-1.5 whitespace-nowrap" id="issue-tab" data-bs-toggle="tab" data-bs-target="#issue-panel" type="button">
+                    <li class="nav-item shrink-0" role="presentation">
+                        <button class="nav-link px-3.5 py-2 text-xs font-bold rounded-lg active flex items-center justify-center gap-1.5 whitespace-nowrap" id="issue-tab" data-bs-toggle="tab" data-bs-target="#issue-panel" type="button">
                             <span class="material-symbols-outlined text-base">output</span> 2. Issue Equipment
                         </button>
                     </li>
-                    <li class="nav-item shrink-0 flex-1 min-w-[140px]" role="presentation">
-                        <button class="nav-link w-full py-2.5 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 text-status-warning whitespace-nowrap" id="transfer-tab" data-bs-toggle="tab" data-bs-target="#transfer-panel" type="button">
+                    <li class="nav-item shrink-0" role="presentation">
+                        <button class="nav-link px-3.5 py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 text-status-warning whitespace-nowrap" id="transfer-tab" data-bs-toggle="tab" data-bs-target="#transfer-panel" type="button">
                             <span class="material-symbols-outlined text-base">move_down</span> 3. Inter-Set Transfer
                         </button>
                     </li>
-                    <li class="nav-item shrink-0 flex-1 min-w-[120px]" role="presentation">
-                        <button class="nav-link w-full py-2.5 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 text-status-alert whitespace-nowrap" id="lost-tab" data-bs-toggle="tab" data-bs-target="#lost-panel" type="button">
+                    <li class="nav-item shrink-0" role="presentation">
+                        <button class="nav-link px-3.5 py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 text-status-alert whitespace-nowrap" id="lost-tab" data-bs-toggle="tab" data-bs-target="#lost-panel" type="button">
                             <span class="material-symbols-outlined text-base">report_problem</span> 4. Report Lost
                         </button>
                     </li>
@@ -454,9 +456,9 @@
                                 <!-- Multiple Team Members Section -->
                                 <div class="mb-4">
                                     <label class="block text-xs font-bold text-text-primary mb-1.5">Team Members / Assistants (Multiple)</label>
-                                    <div class="flex gap-2 mb-2">
-                                        <input type="text" id="member_input" class="flex-1 px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none" placeholder="Enter member name and click Add">
-                                        <button class="px-3 py-2 border border-surface-border rounded-lg text-xs font-semibold hover:bg-surface-container-low transition-colors" type="button" onclick="addTeamMember()">
+                                    <div class="flex items-center gap-2 mb-2 w-full">
+                                        <input type="text" id="member_input" class="flex-1 min-w-0 px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none focus:border-primary" placeholder="Enter member name and click Add">
+                                        <button class="px-3 py-2 border border-surface-border rounded-lg text-xs font-semibold hover:bg-surface-container-low transition-colors shrink-0 flex items-center gap-1" type="button" onclick="addTeamMember()">
                                             <span class="material-symbols-outlined text-sm">person_add</span> Add
                                         </button>
                                     </div>
