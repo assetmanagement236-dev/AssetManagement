@@ -979,8 +979,9 @@
 
 <!-- INITIALIZATION SPLASH SCREEN -->
 <div id="initSplashScreen" class="fixed inset-0 z-[4000] bg-background flex flex-col items-center justify-center transition-opacity duration-300" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #ffffff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-    <div class="w-16 h-16 mb-4 flex items-center justify-center rounded-2xl" style="background: #e6f0ff;">
-        <span class="material-symbols-outlined text-4xl text-primary" style="color: #004ac6;">hourglass_empty</span>
+    <style>@keyframes f-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } @keyframes f-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }</style>
+    <div class="w-16 h-16 mb-4 flex items-center justify-center rounded-2xl" style="background: #e6f0ff; animation: f-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;">
+        <span class="material-symbols-outlined text-4xl text-primary" style="color: #004ac6; animation: f-spin 3s linear infinite;">hourglass_empty</span>
     </div>
     <h2 class="text-xl font-bold text-text-primary tracking-tight">Asset Management</h2>
     <p class="text-sm text-text-secondary mt-1">Verifying secure session...</p>
