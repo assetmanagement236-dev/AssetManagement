@@ -1890,9 +1890,10 @@ window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
   deferredPrompt = e;
   const btn = document.getElementById("pwaInstallBtn");
-  if (btn) {
-    btn.classList.remove("d-none");
-  }
+  if (btn) btn.classList.remove("hidden");
+
+  const mobileBtn = document.getElementById("pwaInstallSidebarBtn");
+  if (mobileBtn) mobileBtn.style.display = "flex";
 });
 
 function installPWA() {
@@ -1904,7 +1905,10 @@ function installPWA() {
       }
       deferredPrompt = null;
       const btn = document.getElementById("pwaInstallBtn");
-      if (btn) btn.classList.add("d-none");
+      if (btn) btn.classList.add("hidden");
+
+      const mobileBtn = document.getElementById("pwaInstallSidebarBtn");
+      if (mobileBtn) mobileBtn.style.display = "none";
     });
   } else {
     alert(
