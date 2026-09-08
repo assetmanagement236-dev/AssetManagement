@@ -104,18 +104,18 @@
 <body class="bg-background text-text-primary font-body-md min-h-screen">
 
 <!-- TopNavBar -->
-<nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-8 h-16 bg-background border-b border-surface-border shadow-sm">
-    <div class="flex items-center gap-2 md:gap-3 shrink-0">
+<nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-3 md:px-8 h-16 bg-background border-b border-surface-border shadow-sm">
+    <div class="flex items-center gap-1.5 md:gap-3 shrink-0">
         <!-- Mobile Sidebar Toggle Button -->
-        <button class="md:hidden p-1.5 rounded-lg text-text-secondary hover:text-primary hover:bg-surface-container-low" onclick="toggleMobileSidebar()" title="Toggle Navigation">
-            <span class="material-symbols-outlined text-2xl">menu</span>
+        <button class="md:hidden p-2 rounded-lg text-text-secondary hover:text-primary hover:bg-surface-container-low transition-colors" onclick="toggleMobileSidebar()" title="Toggle Navigation" aria-label="Open Menu">
+            <span class="material-symbols-outlined text-2xl block">menu</span>
         </button>
 
         <span class="material-symbols-outlined text-primary text-2xl md:text-3xl">inventory_2</span>
-        <span class="text-base md:text-xl font-bold text-primary tracking-tight whitespace-nowrap">Kinetic Asset Intelligence</span>
+        <span class="text-sm sm:text-base md:text-xl font-bold text-primary tracking-tight whitespace-nowrap">Kinetic Assets</span>
     </div>
     
-    <div class="flex items-center gap-2 md:gap-3 shrink-0">
+    <div class="flex items-center gap-1.5 md:gap-3 shrink-0">
         <!-- Firebase Status Badge -->
         <span id="firebaseStatusBadge" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-low text-text-secondary border border-surface-border cursor-pointer hover:bg-surface-border transition-colors whitespace-nowrap" onclick="openFirebaseModal()">
             <span class="w-2 h-2 rounded-full bg-status-warning block"></span> <span class="hidden sm:inline">Local Mode</span>
@@ -218,44 +218,44 @@
 </script>
 
 <!-- Main Content Canvas -->
-<main class="md:ml-64 px-4 pb-4 md:px-8 md:pb-8 pt-20 md:pt-20 min-h-screen bg-surface">
+<main class="md:ml-64 px-3 pb-4 md:px-8 md:pb-8 pt-20 md:pt-20 min-h-screen bg-surface">
     <!-- Header -->
-    <header class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+    <header class="mb-5 flex flex-col md:flex-row justify-between items-start md:items-end gap-3">
         <div>
-            <h1 class="text-2xl md:text-3xl font-bold text-text-primary tracking-tight mb-1">Master Inventory</h1>
-            <p class="text-sm text-text-secondary">Asset Control & Kinetic Tracking Platform</p>
+            <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-text-primary tracking-tight mb-1">Master Inventory</h1>
+            <p class="text-xs sm:text-sm text-text-secondary">Asset Control & Kinetic Tracking Platform</p>
         </div>
-        <div class="flex gap-2">
-            <button class="bg-background text-text-primary border border-surface-border px-4 py-2 rounded-lg text-xs font-semibold hover:bg-surface-container-low transition-colors flex items-center gap-2" onclick="document.getElementById('m_name').focus()">
+        <div class="flex gap-2 w-full md:w-auto">
+            <button class="flex-1 md:flex-initial bg-background text-text-primary border border-surface-border px-3.5 py-2 rounded-lg text-xs font-semibold hover:bg-surface-container-low transition-colors flex items-center justify-center gap-1.5" onclick="document.getElementById('m_name').focus()">
                 <span class="material-symbols-outlined text-base">filter_list</span> Filter
             </button>
-            <button class="bg-primary text-on-primary px-4 py-2 rounded-lg text-xs font-semibold hover:bg-surface-tint transition-colors flex items-center gap-2 shadow-sm" onclick="document.getElementById('masterForm').scrollIntoView({behavior:'smooth'})">
+            <button class="flex-1 md:flex-initial bg-primary text-on-primary px-3.5 py-2 rounded-lg text-xs font-semibold hover:bg-surface-tint transition-colors flex items-center justify-center gap-1.5 shadow-sm" onclick="document.getElementById('masterForm').scrollIntoView({behavior:'smooth'})">
                 <span class="material-symbols-outlined text-base">add</span> Add Asset
             </button>
         </div>
     </header>
 
     <!-- Stat Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-background border border-surface-border rounded-xl p-5 shadow-sm relative overflow-hidden flex flex-col justify-between h-28">
-            <div class="absolute -right-4 -top-4 w-20 h-20 bg-surface-container-low rounded-full opacity-50"></div>
-            <div class="text-xs font-bold text-text-secondary uppercase tracking-wider">Total Item Types</div>
-            <div class="text-2xl md:text-3xl font-bold text-text-primary" id="stat_total_types">0</div>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
+        <div class="bg-background border border-surface-border rounded-xl p-3.5 md:p-5 shadow-sm relative overflow-hidden flex flex-col justify-between min-h-[92px] md:h-28">
+            <div class="absolute -right-4 -top-4 w-16 h-16 md:w-20 md:h-20 bg-surface-container-low rounded-full opacity-50"></div>
+            <div class="text-[10px] sm:text-xs font-bold text-text-secondary uppercase tracking-wider">Total Item Types</div>
+            <div class="text-xl sm:text-2xl md:text-3xl font-bold text-text-primary mt-1" id="stat_total_types">0</div>
         </div>
-        <div class="bg-background border border-surface-border rounded-xl p-5 shadow-sm relative overflow-hidden flex flex-col justify-between h-28">
-            <div class="absolute -right-4 -top-4 w-20 h-20 bg-primary-fixed/30 rounded-full opacity-50"></div>
-            <div class="text-xs font-bold text-text-secondary uppercase tracking-wider">Total Stock Units</div>
-            <div class="text-2xl md:text-3xl font-bold text-primary" id="stat_total_units">0</div>
+        <div class="bg-background border border-surface-border rounded-xl p-3.5 md:p-5 shadow-sm relative overflow-hidden flex flex-col justify-between min-h-[92px] md:h-28">
+            <div class="absolute -right-4 -top-4 w-16 h-16 md:w-20 md:h-20 bg-primary-fixed/30 rounded-full opacity-50"></div>
+            <div class="text-[10px] sm:text-xs font-bold text-text-secondary uppercase tracking-wider">Total Stock Units</div>
+            <div class="text-xl sm:text-2xl md:text-3xl font-bold text-primary mt-1" id="stat_total_units">0</div>
         </div>
-        <div class="bg-background border border-surface-border rounded-xl p-5 shadow-sm relative overflow-hidden flex flex-col justify-between h-28">
-            <div class="absolute -right-4 -top-4 w-20 h-20 bg-status-success/10 rounded-full opacity-50"></div>
-            <div class="text-xs font-bold text-text-secondary uppercase tracking-wider">Available Stock</div>
-            <div class="text-2xl md:text-3xl font-bold text-status-success" id="stat_avail_units">0</div>
+        <div class="bg-background border border-surface-border rounded-xl p-3.5 md:p-5 shadow-sm relative overflow-hidden flex flex-col justify-between min-h-[92px] md:h-28">
+            <div class="absolute -right-4 -top-4 w-16 h-16 md:w-20 md:h-20 bg-status-success/10 rounded-full opacity-50"></div>
+            <div class="text-[10px] sm:text-xs font-bold text-text-secondary uppercase tracking-wider">Available Stock</div>
+            <div class="text-xl sm:text-2xl md:text-3xl font-bold text-status-success mt-1" id="stat_avail_units">0</div>
         </div>
-        <div class="bg-background border border-surface-border rounded-xl p-5 shadow-sm relative overflow-hidden flex flex-col justify-between h-28">
-            <div class="absolute -right-4 -top-4 w-20 h-20 bg-status-warning/10 rounded-full opacity-50"></div>
-            <div class="text-xs font-bold text-text-secondary uppercase tracking-wider">Currently Issued</div>
-            <div class="text-2xl md:text-3xl font-bold text-status-warning" id="stat_issued_units">0</div>
+        <div class="bg-background border border-surface-border rounded-xl p-3.5 md:p-5 shadow-sm relative overflow-hidden flex flex-col justify-between min-h-[92px] md:h-28">
+            <div class="absolute -right-4 -top-4 w-16 h-16 md:w-20 md:h-20 bg-status-warning/10 rounded-full opacity-50"></div>
+            <div class="text-[10px] sm:text-xs font-bold text-text-secondary uppercase tracking-wider">Currently Issued</div>
+            <div class="text-xl sm:text-2xl md:text-3xl font-bold text-status-warning mt-1" id="stat_issued_units">0</div>
         </div>
     </div>
 
@@ -312,7 +312,7 @@
                                 <div class="flex gap-2 mb-2">
                                     <input type="text" id="box_item_name" class="flex-1 px-2.5 py-1.5 border border-surface-border rounded-lg text-xs bg-background outline-none" placeholder="Box Item (e.g. Battery)">
                                     <input type="number" id="box_item_qty" class="w-16 px-2 py-1.5 border border-surface-border rounded-lg text-xs bg-background outline-none" min="1" value="1" placeholder="Qty">
-                                    <button class="px-3 py-1.5 bg-primary text-on-primary rounded-lg text-xs font-semibold hover:bg-surface-tint transition-colors" type="button" onclick="addBoxItem()"><span class="material-symbols-outlined text-sm">add</span></button>
+                                    <button class="px-3 py-1.5 bg-primary text-on-primary rounded-lg text-xs font-semibold hover:bg-surface-tint transition-colors shrink-0" type="button" onclick="addBoxItem()"><span class="material-symbols-outlined text-sm block">add</span></button>
                                 </div>
                                 <div id="box_items_container" class="mt-2 flex flex-wrap gap-1.5">
                                     <small class="text-xs text-text-secondary" id="empty_box_text">No box items added to set yet.</small>
@@ -398,21 +398,21 @@
         <!-- RIGHT PANEL: Issue, Inter-Set Transfer, Lost Item & Movement Logs (7 Columns) -->
         <div class="lg:col-span-7 flex flex-col gap-6">
             
-            <!-- Operations Navigation Tabs -->
-            <div class="bg-background border border-surface-border rounded-xl shadow-sm overflow-hidden p-2">
-                <ul class="nav nav-tabs border-0 flex flex-wrap gap-1 p-0 bg-surface-container-low rounded-lg" id="opTab" role="tablist">
-                    <li class="nav-item flex-1" role="presentation">
-                        <button class="nav-link w-full py-2.5 text-xs font-bold rounded-lg active flex items-center justify-center gap-1.5" id="issue-tab" data-bs-toggle="tab" data-bs-target="#issue-panel" type="button">
+            <!-- Operations Navigation Tabs (Scrollable on Mobile) -->
+            <div class="bg-background border border-surface-border rounded-xl shadow-sm p-1.5">
+                <ul class="nav nav-tabs border-0 flex flex-nowrap overflow-x-auto gap-1.5 p-1 bg-surface-container-low rounded-lg no-scrollbar" id="opTab" role="tablist">
+                    <li class="nav-item shrink-0 flex-1 min-w-[130px]" role="presentation">
+                        <button class="nav-link w-full py-2.5 text-xs font-bold rounded-lg active flex items-center justify-center gap-1.5 whitespace-nowrap" id="issue-tab" data-bs-toggle="tab" data-bs-target="#issue-panel" type="button">
                             <span class="material-symbols-outlined text-base">output</span> 2. Issue Equipment
                         </button>
                     </li>
-                    <li class="nav-item flex-1" role="presentation">
-                        <button class="nav-link w-full py-2.5 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 text-status-warning" id="transfer-tab" data-bs-toggle="tab" data-bs-target="#transfer-panel" type="button">
+                    <li class="nav-item shrink-0 flex-1 min-w-[140px]" role="presentation">
+                        <button class="nav-link w-full py-2.5 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 text-status-warning whitespace-nowrap" id="transfer-tab" data-bs-toggle="tab" data-bs-target="#transfer-panel" type="button">
                             <span class="material-symbols-outlined text-base">move_down</span> 3. Inter-Set Transfer
                         </button>
                     </li>
-                    <li class="nav-item flex-1" role="presentation">
-                        <button class="nav-link w-full py-2.5 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 text-status-alert" id="lost-tab" data-bs-toggle="tab" data-bs-target="#lost-panel" type="button">
+                    <li class="nav-item shrink-0 flex-1 min-w-[120px]" role="presentation">
+                        <button class="nav-link w-full py-2.5 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 text-status-alert whitespace-nowrap" id="lost-tab" data-bs-toggle="tab" data-bs-target="#lost-panel" type="button">
                             <span class="material-symbols-outlined text-base">report_problem</span> 4. Report Lost
                         </button>
                     </li>

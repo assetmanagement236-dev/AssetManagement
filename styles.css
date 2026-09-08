@@ -249,10 +249,30 @@ table td {
 
 /* LAYOUT CANVAS CLEARANCE FIX */
 main {
-  padding-top: 80px !important;
+  padding-top: 76px !important;
 }
 @media (min-width: 768px) {
   main {
     padding-top: 84px !important;
+  }
+}
+
+/* MOBILE RESPONSIVE & TOUCH UTILITIES */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 14px !important; /* Prevents auto-zoom on mobile safari/chrome */
+  }
+  .modal-dialog {
+    margin: 0.5rem;
   }
 }
