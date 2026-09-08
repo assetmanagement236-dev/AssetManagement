@@ -246,3 +246,13 @@ table td {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* LAYOUT CANVAS CLEARANCE FIX */
+main {
+  padding-top: 100px !important;
+}
+@media (min-width: 768px) {
+  main {
+    padding-top: 112px !important;
+  }
+}
