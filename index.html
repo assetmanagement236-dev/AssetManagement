@@ -12,10 +12,16 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2554/2554936.png">
 
+    <!-- Performance preconnect hints -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" media="print" onload="this.media='all'">
 
     <!-- Bootstrap 5 CSS for compatibility with BootstrapJS Modals/Tabs -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -136,7 +142,7 @@
             <span class="material-symbols-outlined text-sm">restart_alt</span> Reset
         </button>
 
-        <button class="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full hover:bg-surface-container-low text-text-secondary hover:text-primary transition-colors shrink-0" title="Sync Data" onclick="location.reload()">
+        <button class="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full hover:bg-surface-container-low text-text-secondary hover:text-primary transition-colors shrink-0" title="Sync Data" aria-label="Refresh and Sync Data from Server" onclick="location.reload()">
             <span class="material-symbols-outlined text-lg md:text-xl">sync</span>
         </button>
 
@@ -1101,13 +1107,13 @@
 </script>
 
 <!-- Firebase SDK (Compat v10) -->
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <!-- App Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="firebase-config.js"></script>
-<script src="app.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script defer src="firebase-config.js"></script>
+<script defer src="app.js"></script>
 </body>
 </html>
