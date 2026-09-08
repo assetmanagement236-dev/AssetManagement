@@ -52,7 +52,14 @@ function initFirebase() {
       console.log("✅ Firebase initialized successfully!");
 
       // Listen for Authentication State Changes
+      // Firebase Web SDK dynamically handles local persistence by default.
       auth.onAuthStateChanged((user) => {
+        const splash = document.getElementById("initSplashScreen");
+        if (splash) {
+          splash.style.opacity = "0";
+          setTimeout(() => splash.classList.add("hidden"), 300);
+        }
+
         if (user) {
           // User is signed in
           currentUserUID = user.uid;
@@ -64,8 +71,8 @@ function initFirebase() {
             document.getElementById("activeUserEmail").textContent = user.email;
           }
 
-          // Trigger Data Load from LocalStorage specific to this UID, then start Firebase listeners
-          loadData(true); // pass flag that auth changed
+          // Load local user data scoped uniquely, then start Firebase listeners
+          if (typeof loadData === "function") loadData();
           setupRealtimeListeners();
         } else {
           // User is signed out
@@ -241,12 +248,21 @@ async function deleteFromFirebase(collectionName, id) {
 let isLoginMode = true;
 function toggleAuthMode() {
   isLoginMode = !isLoginMode;
-  document.getElementById("authSubmitBtn").innerHTML = isLoginMode
-    ? `<span class="material-symbols-outlined text-lg">login</span> Sign In`
-    : `<span class="material-symbols-outlined text-lg">person_add</span> Create Account`;
+
+  const btnText = document.getElementById("authBtnText");
+  const btnIcon = document.getElementById("authBtnIcon");
+
+  if (isLoginMode) {
+    btnText.textContent = "Sign In to Workspace";
+    btnIcon.textContent = "login";
+  } else {
+    btnText.textContent = "Create Workspace Account";
+    btnIcon.textContent = "person_add";
+  }
+
   document.getElementById("authToggleText").textContent = isLoginMode
-    ? "Sign Up Instead"
-    : "Sign In Instead";
+    ? "Create a New Workspace Account"
+    : "Sign In to Existing Workspace";
   document.getElementById("authAlert").classList.add("hidden");
 }
 
@@ -260,7 +276,10 @@ function handleAuthSubmit(e) {
   if (!auth) return;
 
   const btn = document.getElementById("authSubmitBtn");
+  const loader = document.getElementById("authBtnLoader");
+
   btn.disabled = true;
+  if (loader) loader.classList.remove("hidden");
 
   if (isLoginMode) {
     auth
@@ -268,14 +287,20 @@ function handleAuthSubmit(e) {
       .catch((err) => {
         showAuthError(err.message);
       })
-      .finally(() => (btn.disabled = false));
+      .finally(() => {
+        btn.disabled = false;
+        if (loader) loader.classList.add("hidden");
+      });
   } else {
     auth
       .createUserWithEmailAndPassword(email, password)
       .catch((err) => {
         showAuthError(err.message);
       })
-      .finally(() => (btn.disabled = false));
+      .finally(() => {
+        btn.disabled = false;
+        if (loader) loader.classList.add("hidden");
+      });
   }
 }
 
