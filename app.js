@@ -1889,11 +1889,12 @@ let deferredPrompt = null;
 window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  const btn = document.getElementById("pwaInstallBtn");
-  if (btn) btn.classList.remove("hidden");
 
-  const mobileBtn = document.getElementById("pwaInstallSidebarBtn");
-  if (mobileBtn) mobileBtn.style.display = "flex";
+  const uiBtn = document.getElementById("pwaInstallSidebarBtn");
+  if (uiBtn) {
+    uiBtn.classList.remove("hidden");
+    uiBtn.classList.add("flex");
+  }
 });
 
 function installPWA() {
@@ -1904,11 +1905,12 @@ function installPWA() {
         console.log("User accepted PWA install prompt");
       }
       deferredPrompt = null;
-      const btn = document.getElementById("pwaInstallBtn");
-      if (btn) btn.classList.add("hidden");
 
-      const mobileBtn = document.getElementById("pwaInstallSidebarBtn");
-      if (mobileBtn) mobileBtn.style.display = "none";
+      const uiBtn = document.getElementById("pwaInstallSidebarBtn");
+      if (uiBtn) {
+        uiBtn.classList.add("hidden");
+        uiBtn.classList.remove("flex");
+      }
     });
   } else {
     alert(

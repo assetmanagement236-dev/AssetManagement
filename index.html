@@ -154,26 +154,7 @@
         </div>
 
         <div class="flex items-center gap-1.5 md:gap-3 shrink-0">
-          <!-- Firebase Status Badge -->
-          <span
-            id="firebaseStatusBadge"
-            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-low text-text-secondary border border-surface-border cursor-pointer hover:bg-surface-border transition-colors whitespace-nowrap"
-            onclick="openFirebaseModal()"
-          >
-            <span class="w-2 h-2 rounded-full bg-status-warning block"></span>
-            <span class="hidden sm:inline">Local Mode</span>
-          </span>
 
-          <button
-            id="pwaInstallBtn"
-            class="hidden lg:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-status-success text-status-success hover:bg-status-success hover:text-white transition-colors text-xs font-semibold whitespace-nowrap"
-            onclick="installPWA()"
-          >
-            <span class="material-symbols-outlined text-sm"
-              >install_mobile</span
-            >
-            Install App
-          </button>
 
           <button
             class="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-surface-border text-text-secondary hover:text-primary hover:bg-surface-container-low transition-colors text-xs font-semibold whitespace-nowrap"
@@ -183,13 +164,7 @@
             Export
           </button>
 
-          <button
-            class="hidden md:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-status-alert/30 text-status-alert hover:bg-status-alert hover:text-white transition-colors text-xs font-semibold whitespace-nowrap"
-            onclick="triggerResetWorkflow()"
-          >
-            <span class="material-symbols-outlined text-sm">restart_alt</span>
-            Reset
-          </button>
+
 
           <button
             class="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full hover:bg-surface-container-low text-text-secondary hover:text-primary transition-colors shrink-0"
@@ -318,8 +293,7 @@
           </button>
           <button
             id="pwaInstallSidebarBtn"
-            class="lg:hidden flex items-center gap-3 px-3 py-2 mt-2 bg-status-success/10 text-status-success font-bold hover:bg-status-success/20 transition-all rounded-lg text-xs w-full text-left"
-            style="display: none;"
+            class="hidden items-center gap-3 px-3 py-2 mt-2 bg-status-success/10 text-status-success font-bold hover:bg-status-success/20 transition-all rounded-lg text-xs w-full text-left"
             onclick="installPWA()"
           >
             <span class="material-symbols-outlined text-lg">install_mobile</span>
@@ -337,13 +311,7 @@
             <span class="material-symbols-outlined text-base">password</span>
             <span>Change Password</span>
           </button>
-          <button
-            class="flex items-center gap-3 px-3 py-1.5 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left"
-            onclick="openFirebaseModal()"
-          >
-            <span class="material-symbols-outlined text-base">settings</span>
-            <span>Firebase Config</span>
-          </button>
+
           <button
             class="flex items-center gap-3 px-3 py-1.5 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left"
             onclick="openExportModal()"
