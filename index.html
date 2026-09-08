@@ -78,6 +78,30 @@
                                     <input type="text" id="m_serial" class="form-control" placeholder="e.g. TS-101, LP-202">
                                     <small class="text-muted" style="font-size: 0.75rem;">* সিরিয়াল নম্বর ইউনিক হতে হবে</small>
                                 </div>
+                                
+                                <!-- BOX ACCESSORIES INCLUSION (SET) -->
+                                <div class="mb-3 box-input-group">
+                                    <label class="form-label fw-semibold text-primary d-flex align-items-center">
+                                        <i class="bi bi-box-seam me-1"></i> Equipment Box Items / Set Components
+                                    </label>
+                                    <small class="text-muted d-block mb-2" style="font-size: 0.75rem;">ইক্যুইপমেন্ট বক্সের ভেতরে থাকা আনুষঙ্গিক জিনিসের নাম ও সংখ্যা এন্ট্রি করুন (যেমন: Battery, Cable, Charger)</small>
+                                    
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-7">
+                                            <input type="text" id="box_item_name" class="form-control form-control-sm" placeholder="Box Item (e.g. Battery)">
+                                        </div>
+                                        <div class="col-3">
+                                            <input type="number" id="box_item_qty" class="form-control form-control-sm" min="1" value="1" placeholder="Qty">
+                                        </div>
+                                        <div class="col-2">
+                                            <button class="btn btn-sm btn-outline-primary w-100" type="button" onclick="addBoxItem()"><i class="bi bi-plus"></i></button>
+                                        </div>
+                                    </div>
+                                    <div id="box_items_container" class="mt-2">
+                                        <small class="text-muted" id="empty_box_text">No box items added to set yet.</small>
+                                    </div>
+                                </div>
+
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold">Initial Equipment Condition</label>
                                     <select id="m_condition" class="form-select">
@@ -129,7 +153,7 @@
 
                 <!-- Detailed Master Stock Table -->
                 <div class="card">
-                    <div class="card-header"><i class="bi bi-list-stars me-2 text-info"></i>Part 1: Master Stock Inventory</div>
+                    <div class="card-header"><i class="bi bi-list-stars me-2 text-info"></i>Part 1: Master Stock Inventory & Box Set Integrity</div>
                     <div class="card-body p-0">
                         <div class="table-responsive" style="max-height: 380px; overflow-y: auto;">
                             <table class="table table-custom table-hover align-middle mb-0" id="masterTable">
@@ -156,10 +180,13 @@
                 <!-- Nav Tabs for Operations -->
                 <ul class="nav nav-tabs mb-3" id="opTab" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="issue-tab" data-bs-toggle="tab" data-bs-target="#issue-panel" type="button"><i class="bi bi-send me-2"></i>2. Issue Multiple Equipment / Accessories</button>
+                        <button class="nav-link active" id="issue-tab" data-bs-toggle="tab" data-bs-target="#issue-panel" type="button"><i class="bi bi-send me-2"></i>2. Issue Multiple Equipment</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link text-danger" id="lost-tab" data-bs-toggle="tab" data-bs-target="#lost-panel" type="button"><i class="bi bi-exclamation-triangle me-2"></i>3. Report Lost Item</button>
+                        <button class="nav-link text-warning" id="transfer-tab" data-bs-toggle="tab" data-bs-target="#transfer-panel" type="button"><i class="bi bi-arrow-left-right me-2"></i>3. Borrow / Inter-Set Accessories</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link text-danger" id="lost-tab" data-bs-toggle="tab" data-bs-target="#lost-panel" type="button"><i class="bi bi-exclamation-triangle me-2"></i>4. Report Lost Item</button>
                     </li>
                 </ul>
 
@@ -205,7 +232,7 @@
                                         <!-- MULTI-ITEM SELECTION SECTION -->
                                         <div class="col-12">
                                             <label class="form-label fw-semibold text-primary">
-                                                <i class="bi bi-check2-square me-1"></i> Select Items & Quantities to Issue (একাধিক সিলেক্ট করুন)
+                                                <i class="bi bi-check2-square me-1"></i> Select Items & Quantities to Issue
                                             </label>
                                             <div class="item-selection-container" id="multi_item_container">
                                                 <!-- Dynamic Items Checkboxes & Quantity Input -->
@@ -226,7 +253,62 @@
                         </div>
                     </div>
 
-                    <!-- TAB 2: Report Lost Form -->
+                    <!-- TAB 2: Inter-Set Accessory Borrow / Transfer Form -->
+                    <div class="tab-pane fade" id="transfer-panel" role="tabpanel">
+                        <div class="card transfer-box-card">
+                            <div class="card-header bg-warning bg-opacity-20 text-dark">
+                                <i class="bi bi-arrow-left-right me-2 text-warning"></i>Borrow / Transfer Box Accessory to Another Set
+                            </div>
+                            <div class="card-body">
+                                <form id="transferForm" onsubmit="processBoxTransfer(event)">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Source Equipment Set (যে সেট থেকে মালামাল নেওয়া হবে)</label>
+                                            <select id="t_from_set" class="form-select" onchange="updateSourceBoxAccessoriesDropdown()" required>
+                                                <option value="">-- Select Source Set --</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Select Accessory to Borrow / Move</label>
+                                            <select id="t_accessory_item" class="form-select" required>
+                                                <option value="">-- Select Source Set First --</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Destination Equipment Set (যে সেটে নেওয়া হবে)</label>
+                                            <select id="t_to_set" class="form-select" required>
+                                                <option value="">-- Select Destination Set --</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Quantity to Move</label>
+                                            <input type="number" id="t_qty" class="form-control" min="1" value="1" required>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold">Reason for Inter-Set Borrowing</label>
+                                            <input type="text" id="t_reason" class="form-control" placeholder="e.g. Needed extra battery for Site-B testing..." required>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-warning w-100 py-2 fw-bold text-dark"><i class="bi bi-arrow-left-right me-1"></i> Confirm Accessory Transfer</button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                                <!-- Active Borrowed / Transferred Items Tracking List -->
+                                <div class="mt-4 border-top pt-3">
+                                    <h6 class="fw-bold text-dark"><i class="bi bi-list-nested me-1"></i> Currently Borrowed / Transferred Accessories</h6>
+                                    <div id="borrowed_list_container" class="mt-2"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: Report Lost Form -->
                     <div class="tab-pane fade" id="lost-panel" role="tabpanel">
                         <div class="card border-danger">
                             <div class="card-header bg-danger text-white"><i class="bi bi-exclamation-octagon me-2"></i>Report Lost / Missing Item</div>
@@ -318,7 +400,7 @@
                                         <th>Issue Date</th>
                                         <th>Project & Location</th>
                                         <th>People Involved</th>
-                                        <th>Item & Serial</th>
+                                        <th>Item & Box Components</th>
                                         <th>Issue Condition</th>
                                         <th>Action</th>
                                     </tr>
@@ -343,7 +425,7 @@
                                         <th>Dates / Type</th>
                                         <th>Project</th>
                                         <th>People Involved</th>
-                                        <th>Item & Serial</th>
+                                        <th>Item & Box Components</th>
                                         <th>Return Condition / Details</th>
                                         <th>Status</th>
                                     </tr>
@@ -392,6 +474,7 @@
                         <div class="row g-3 mb-3 p-3 bg-light rounded border">
                             <div class="col-md-6"><strong>Item Name:</strong> <span id="modal_eq_name" class="fw-bold"></span></div>
                             <div class="col-md-6"><strong>Serial / Reference:</strong> <span id="modal_eq_serial" class="fw-bold text-primary"></span></div>
+                            <div class="col-md-12"><strong>Included Box Accessories (Set):</strong> <div id="modal_eq_box_items" class="mt-1"></div></div>
                             <div class="col-md-6"><strong>Project/Location:</strong> <span id="modal_project_id"></span></div>
                             <div class="col-md-6"><strong>Receiver (Original):</strong> <span id="modal_issue_receiver" class="fw-bold text-primary"></span></div>
                             <div class="col-md-6"><strong>Issue Condition:</strong> <span id="modal_issue_cond" class="badge cond-good"></span></div>

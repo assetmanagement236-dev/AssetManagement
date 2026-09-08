@@ -86,6 +86,7 @@ function setupRealtimeListeners() {
           remoteInventory.push(doc.data());
         });
         inventory = remoteInventory;
+        localStorage.setItem("eq_v10_inventory", JSON.stringify(inventory));
         localStorage.setItem("eq_v8_inventory", JSON.stringify(inventory));
         renderAll();
       }
@@ -106,12 +107,35 @@ function setupRealtimeListeners() {
         // Sort by ID descending
         remoteLogs.sort((a, b) => b.id - a.id);
         issueLogs = remoteLogs;
+        localStorage.setItem("eq_v10_logs", JSON.stringify(issueLogs));
         localStorage.setItem("eq_v8_logs", JSON.stringify(issueLogs));
         renderAll();
       }
     },
     (error) => {
       console.error("Error listening to logs:", error);
+    },
+  );
+
+  // Sync Transfers
+  db.collection("asset_transfers").onSnapshot(
+    (snapshot) => {
+      if (!snapshot.empty) {
+        const remoteTransfers = [];
+        snapshot.forEach((doc) => {
+          remoteTransfers.push(doc.data());
+        });
+        remoteTransfers.sort((a, b) => b.id - a.id);
+        borrowedTransfers = remoteTransfers;
+        localStorage.setItem(
+          "eq_v10_transfers",
+          JSON.stringify(borrowedTransfers),
+        );
+        renderAll();
+      }
+    },
+    (error) => {
+      console.error("Error listening to transfers:", error);
     },
   );
 }
@@ -136,6 +160,14 @@ async function syncToFirebase() {
       logBatch.set(docRef, log, { merge: true });
     });
     await logBatch.commit();
+
+    // Bulk update Transfers collection
+    const transferBatch = db.batch();
+    borrowedTransfers.forEach((transfer) => {
+      const docRef = db.collection("asset_transfers").doc(String(transfer.id));
+      transferBatch.set(docRef, transfer, { merge: true });
+    });
+    await transferBatch.commit();
 
     console.log("☁️ Successfully synced data to Firebase!");
   } catch (err) {

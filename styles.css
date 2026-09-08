@@ -154,8 +154,50 @@ body {
   font-weight: 600;
 }
 
+.badge-incomplete {
+  background-color: #fee2e2;
+  color: #991b1b;
+  font-weight: bold;
+}
+
+.box-item-chip {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
+
+.borrowed-chip {
+  display: inline-block;
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
+
+.box-input-group {
+  background-color: #ffffff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.transfer-box-card {
+  background: #fff8f1;
+  border: 1px solid #ffedd5;
+}
+
 .item-selection-container {
-  max-height: 250px;
+  max-height: 280px;
   overflow-y: auto;
   border: 1px solid #cbd5e1;
   border-radius: 8px;

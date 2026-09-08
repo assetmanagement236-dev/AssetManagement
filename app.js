@@ -1,9 +1,20 @@
-// Data Storage Architecture
-let inventory = JSON.parse(localStorage.getItem("eq_v8_inventory")) || [];
-let issueLogs = JSON.parse(localStorage.getItem("eq_v8_logs")) || [];
+// Data Storage Architecture (V10 with V8 Migration Fallback)
+let inventory =
+  JSON.parse(localStorage.getItem("eq_v10_inventory")) ||
+  JSON.parse(localStorage.getItem("eq_v8_inventory")) ||
+  [];
+let issueLogs =
+  JSON.parse(localStorage.getItem("eq_v10_logs")) ||
+  JSON.parse(localStorage.getItem("eq_v8_logs")) ||
+  [];
+let borrowedTransfers =
+  JSON.parse(localStorage.getItem("eq_v10_transfers")) || [];
 let customSuggestions =
-  JSON.parse(localStorage.getItem("eq_v8_custom_suggestions")) || [];
+  JSON.parse(localStorage.getItem("eq_v10_custom_suggestions")) ||
+  JSON.parse(localStorage.getItem("eq_v8_custom_suggestions")) ||
+  [];
 let currentTeamMembers = [];
+let currentBoxItems = [];
 let pendingReset = false;
 let exportModalObj, manageSuggestionsModalObj, returnModalObj, firebaseModalObj;
 
@@ -16,10 +27,11 @@ const today = new Date();
 document.getElementById("exp_month").value = today.toISOString().slice(0, 7);
 
 function saveData() {
-  localStorage.setItem("eq_v8_inventory", JSON.stringify(inventory));
-  localStorage.setItem("eq_v8_logs", JSON.stringify(issueLogs));
+  localStorage.setItem("eq_v10_inventory", JSON.stringify(inventory));
+  localStorage.setItem("eq_v10_logs", JSON.stringify(issueLogs));
+  localStorage.setItem("eq_v10_transfers", JSON.stringify(borrowedTransfers));
   localStorage.setItem(
-    "eq_v8_custom_suggestions",
+    "eq_v10_custom_suggestions",
     JSON.stringify(customSuggestions),
   );
 
@@ -167,6 +179,284 @@ function renderTeamMemberChips() {
     .join("");
 }
 
+// --- BOX ACCESSORIES (SET ITEMS) IN MASTER CREATION ---
+function addBoxItem() {
+  const nameInput = document.getElementById("box_item_name");
+  const qtyInput = document.getElementById("box_item_qty");
+  const name = nameInput.value.trim();
+  const qty = parseInt(qtyInput.value) || 1;
+
+  if (!name) {
+    alert("Please enter a box item name (e.g. Battery, Charger)");
+    return;
+  }
+
+  const existing = currentBoxItems.find(
+    (b) => b.name.toLowerCase() === name.toLowerCase(),
+  );
+  if (existing) {
+    existing.qty += qty;
+    existing.originalQty = existing.qty;
+  } else {
+    currentBoxItems.push({
+      name: name,
+      qty: qty,
+      originalQty: qty,
+    });
+  }
+
+  nameInput.value = "";
+  qtyInput.value = "1";
+  renderBoxItemChips();
+}
+
+function removeBoxItem(index) {
+  currentBoxItems.splice(index, 1);
+  renderBoxItemChips();
+}
+
+function renderBoxItemChips() {
+  const container = document.getElementById("box_items_container");
+  if (!container) return;
+  if (currentBoxItems.length === 0) {
+    container.innerHTML =
+      '<small class="text-muted" id="empty_box_text">No box items added to set yet.</small>';
+    return;
+  }
+  container.innerHTML = currentBoxItems
+    .map(
+      (b, idx) => `
+        <span class="box-item-chip">
+            <i class="bi bi-box me-1"></i>${b.name} (${b.qty}) 
+            <i class="bi bi-x-circle-fill text-danger ms-1" style="cursor:pointer;" onclick="removeBoxItem(${idx})"></i>
+        </span>
+    `,
+    )
+    .join("");
+}
+
+// --- INTER-SET BORROW & ACCESSORY TRANSFER SYSTEM ---
+function updateTransferDropdowns() {
+  const fromSelect = document.getElementById("t_from_set");
+  const toSelect = document.getElementById("t_to_set");
+  if (!fromSelect || !toSelect) return;
+
+  const equipmentList = inventory.filter((i) => i.type === "EQUIPMENT");
+
+  const currentFrom = fromSelect.value;
+  const currentTo = toSelect.value;
+
+  fromSelect.innerHTML = '<option value="">-- Select Source Set --</option>';
+  toSelect.innerHTML = '<option value="">-- Select Destination Set --</option>';
+
+  equipmentList.forEach((eq) => {
+    const hasItems = eq.boxItems && eq.boxItems.length > 0;
+    const optFrom = document.createElement("option");
+    optFrom.value = eq.id;
+    optFrom.textContent = `${eq.name} (${eq.serial}) ${hasItems ? `[${eq.boxItems.length} box items]` : "[No box items]"}`;
+    fromSelect.appendChild(optFrom);
+
+    const optTo = document.createElement("option");
+    optTo.value = eq.id;
+    optTo.textContent = `${eq.name} (${eq.serial})`;
+    toSelect.appendChild(optTo);
+  });
+
+  if (currentFrom) fromSelect.value = currentFrom;
+  if (currentTo) toSelect.value = currentTo;
+}
+
+function updateSourceBoxAccessoriesDropdown() {
+  const fromId = parseInt(document.getElementById("t_from_set").value);
+  const accSelect = document.getElementById("t_accessory_item");
+  if (!accSelect) return;
+
+  accSelect.innerHTML = '<option value="">-- Select Accessory --</option>';
+
+  if (!fromId) return;
+
+  const sourceEq = inventory.find((i) => i.id === fromId);
+  if (sourceEq && sourceEq.boxItems && sourceEq.boxItems.length > 0) {
+    sourceEq.boxItems.forEach((b, idx) => {
+      if (b.qty > 0) {
+        const opt = document.createElement("option");
+        opt.value = idx;
+        opt.textContent = `${b.name} (Available in set: ${b.qty})`;
+        accSelect.appendChild(opt);
+      }
+    });
+  } else {
+    accSelect.innerHTML =
+      '<option value="">No box accessories in source set!</option>';
+  }
+}
+
+function processBoxTransfer(e) {
+  e.preventDefault();
+  const fromId = parseInt(document.getElementById("t_from_set").value);
+  const accIndex = parseInt(document.getElementById("t_accessory_item").value);
+  const toId = parseInt(document.getElementById("t_to_set").value);
+  const qty = parseInt(document.getElementById("t_qty").value) || 1;
+  const reason = document.getElementById("t_reason").value.trim();
+
+  if (fromId === toId) {
+    alert("Source Set and Destination Set cannot be the same!");
+    return;
+  }
+
+  const sourceEq = inventory.find((i) => i.id === fromId);
+  const destEq = inventory.find((i) => i.id === toId);
+
+  if (!sourceEq || !destEq) {
+    alert("Invalid Equipment Set selection!");
+    return;
+  }
+
+  if (isNaN(accIndex) || !sourceEq.boxItems || !sourceEq.boxItems[accIndex]) {
+    alert("Please select a valid accessory to borrow!");
+    return;
+  }
+
+  const sourceBoxItem = sourceEq.boxItems[accIndex];
+
+  if (qty > sourceBoxItem.qty) {
+    alert(
+      `Cannot borrow ${qty} x ${sourceBoxItem.name}. Only ${sourceBoxItem.qty} available in source set!`,
+    );
+    return;
+  }
+
+  // Deduct quantity from Source Set
+  sourceBoxItem.qty -= qty;
+
+  // Add/Increment quantity in Destination Set
+  if (!destEq.boxItems) destEq.boxItems = [];
+  const destBoxItem = destEq.boxItems.find(
+    (b) => b.name.toLowerCase() === sourceBoxItem.name.toLowerCase(),
+  );
+
+  if (destBoxItem) {
+    destBoxItem.qty += qty;
+  } else {
+    destEq.boxItems.push({
+      name: sourceBoxItem.name,
+      qty: qty,
+      originalQty: 0, // Transferred in, so original base is 0
+      borrowedIn: true,
+    });
+  }
+
+  // Create Borrow/Transfer Log Record
+  const transferLog = {
+    id: Date.now(),
+    date: new Date().toLocaleDateString(),
+    sourceId: sourceEq.id,
+    sourceSerial: sourceEq.serial,
+    sourceName: sourceEq.name,
+    destId: destEq.id,
+    destSerial: destEq.serial,
+    destName: destEq.name,
+    itemName: sourceBoxItem.name,
+    qty: qty,
+    reason: reason,
+    active: true,
+  };
+
+  borrowedTransfers.unshift(transferLog);
+
+  document.getElementById("transferForm").reset();
+  alert(
+    `✅ Successfully transferred ${qty} x ${sourceBoxItem.name} from ${sourceEq.name} (${sourceEq.serial}) to ${destEq.name} (${destEq.serial})`,
+  );
+
+  saveData();
+}
+
+function returnBorrowedAccessory(transferId) {
+  const transfer = borrowedTransfers.find((t) => t.id === transferId);
+  if (!transfer || !transfer.active) return;
+
+  if (
+    confirm(
+      `Return ${transfer.qty} x ${transfer.itemName} back to original set ${transfer.sourceName} (${transfer.sourceSerial})?`,
+    )
+  ) {
+    const sourceEq = inventory.find((i) => i.id === transfer.sourceId);
+    const destEq = inventory.find((i) => i.id === transfer.destId);
+
+    if (sourceEq) {
+      if (!sourceEq.boxItems) sourceEq.boxItems = [];
+      const sItem = sourceEq.boxItems.find(
+        (b) => b.name.toLowerCase() === transfer.itemName.toLowerCase(),
+      );
+      if (sItem) {
+        sItem.qty += transfer.qty;
+      } else {
+        sourceEq.boxItems.push({
+          name: transfer.itemName,
+          qty: transfer.qty,
+          originalQty: transfer.qty,
+        });
+      }
+    }
+
+    if (destEq && destEq.boxItems) {
+      const dItem = destEq.boxItems.find(
+        (b) => b.name.toLowerCase() === transfer.itemName.toLowerCase(),
+      );
+      if (dItem) {
+        dItem.qty -= transfer.qty;
+        if (dItem.qty <= 0 && dItem.originalQty === 0) {
+          destEq.boxItems = destEq.boxItems.filter(
+            (b) => b.name.toLowerCase() !== transfer.itemName.toLowerCase(),
+          );
+        }
+      }
+    }
+
+    transfer.active = false;
+    saveData();
+    alert(
+      `✅ ${transfer.qty} x ${transfer.itemName} returned to ${transfer.sourceName}!`,
+    );
+  }
+}
+
+function renderBorrowedList() {
+  const container = document.getElementById("borrowed_list_container");
+  if (!container) return;
+
+  const activeTransfers = borrowedTransfers.filter((t) => t.active);
+
+  if (activeTransfers.length === 0) {
+    container.innerHTML =
+      '<small class="text-muted">No accessories currently borrowed or transferred between sets.</small>';
+    return;
+  }
+
+  container.innerHTML = activeTransfers
+    .map(
+      (t) => `
+        <div class="p-2 mb-2 bg-white border rounded d-flex justify-content-between align-items-center">
+            <div>
+                <span class="badge bg-warning text-dark me-1"><i class="bi bi-arrow-left-right me-1"></i>Transferred</span>
+                <strong>${t.itemName} (x${t.qty})</strong>
+                <div class="small text-muted">
+                    From: <b class="text-primary">${t.sourceName} (${t.sourceSerial})</b> &rarr; To: <b class="text-success">${t.destName} (${t.destSerial})</b>
+                </div>
+                <div class="small text-muted"><i>Reason: ${t.reason}</i> (${t.date})</div>
+            </div>
+            <div>
+                <button class="btn btn-sm btn-outline-success py-1 px-2" onclick="returnBorrowedAccessory(${t.id})">
+                    <i class="bi bi-box-arrow-in-left me-1"></i> Return to Original Set
+                </button>
+            </div>
+        </div>
+    `,
+    )
+    .join("");
+}
+
 // --- MASTER INVENTORY ---
 function addMasterItem(e) {
   e.preventDefault();
@@ -200,13 +490,18 @@ function addMasterItem(e) {
       quantity: 1,
       condition: condition,
       problems: problems || "No reported issues",
+      boxItems: JSON.parse(JSON.stringify(currentBoxItems)),
       isIssued: false,
       exported: false,
     });
 
     document.getElementById("m_serial").value = "";
     document.getElementById("m_problems").value = "";
-    alert(`✅ ${name} (Serial: ${serial}) added to inventory.`);
+    currentBoxItems = [];
+    renderBoxItemChips();
+    alert(
+      `✅ ${name} (Serial: ${serial}) added to inventory with ${currentBoxItems.length} box item(s).`,
+    );
   } else {
     const qty = parseInt(document.getElementById("m_qty").value);
     const existingAcc = inventory.find(
@@ -227,6 +522,7 @@ function addMasterItem(e) {
         quantity: qty,
         condition: "Good",
         problems: "Standard Stock",
+        boxItems: [],
         isIssued: false,
         exported: false,
       });
@@ -266,6 +562,7 @@ function deleteMasterItem(id) {
 // --- RENDER MULTI-ITEM ISSUE CHECKBOXES ---
 function renderMultiItemSelection() {
   const container = document.getElementById("multi_item_container");
+  if (!container) return;
   container.innerHTML = "";
 
   const availableEquipment = inventory.filter(
@@ -287,12 +584,20 @@ function renderMultiItemSelection() {
     html +=
       '<h6 class="fw-bold text-dark border-bottom pb-1 mb-2"><i class="bi bi-tools me-1"></i> Available Main Equipment</h6>';
     availableEquipment.forEach((item) => {
+      let boxChips = "";
+      if (item.boxItems && item.boxItems.length > 0) {
+        boxChips = `<div class="mt-1">${item.boxItems.map((b) => `<span class="box-item-chip"><i class="bi bi-box me-1"></i>${b.name} (${b.qty})</span>`).join("")}</div>`;
+      }
+
       html += `
-                <div class="form-check py-1">
+                <div class="form-check py-1 border-bottom border-light">
                     <input class="form-check-input issue-checkbox" type="checkbox" data-type="EQUIPMENT" data-id="${item.id}" id="chk_${item.id}">
-                    <label class="form-check-label d-flex justify-content-between align-items-center" for="chk_${item.id}">
-                        <span><strong>${item.name}</strong> <small class="text-primary">(Serial: ${item.serial})</small></span>
-                        <span class="badge bg-light text-dark border">${item.condition}</span>
+                    <label class="form-check-label w-100" for="chk_${item.id}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><strong>${item.name}</strong> <small class="text-primary">(Serial: ${item.serial})</small></span>
+                            <span class="badge bg-light text-dark border">${item.condition}</span>
+                        </div>
+                        ${boxChips}
                     </label>
                 </div>
             `;
@@ -378,6 +683,9 @@ function issueEquipment(e) {
         members: [...currentTeamMembers],
         name: item.name,
         serial: item.serial,
+        boxItems: item.boxItems
+          ? JSON.parse(JSON.stringify(item.boxItems))
+          : [],
         issueCondition: item.condition,
         issueProblems: item.problems,
         returnCondition: "",
@@ -416,6 +724,7 @@ function issueEquipment(e) {
         members: [...currentTeamMembers],
         name: item.name,
         serial: `ACC-ISSUE (Qty: ${issueQty})`,
+        boxItems: [],
         issueCondition: "Good",
         issueProblems: `Issued Quantity: ${issueQty}`,
         returnCondition: "",
@@ -485,6 +794,7 @@ function reportLostEquipment(e) {
     members: [],
     name: name,
     serial: serial,
+    boxItems: item.boxItems ? JSON.parse(JSON.stringify(item.boxItems)) : [],
     issueCondition: "LOST",
     issueProblems: `Incident: ${incident} | FIR: ${fir} | Recovery: ${recovery}`,
     returnCondition: "LOST",
@@ -519,6 +829,21 @@ function openReturnModal(logId) {
   document.getElementById("modal_issue_cond").innerText = log.issueCondition;
   document.getElementById("modal_issue_prob").innerText =
     log.issueProblems || "None";
+
+  const boxContainer = document.getElementById("modal_eq_box_items");
+  if (boxContainer) {
+    if (log.boxItems && log.boxItems.length > 0) {
+      boxContainer.innerHTML = log.boxItems
+        .map(
+          (b) =>
+            `<span class="box-item-chip"><i class="bi bi-box me-1"></i>${b.name} (x${b.qty})</span>`,
+        )
+        .join("");
+    } else {
+      boxContainer.innerHTML =
+        '<small class="text-muted">No box items registered with this set.</small>';
+    }
+  }
 
   document.getElementById("r_date").valueAsDate = new Date();
   document.getElementById("r_returner").value = originalReceiver;
@@ -593,6 +918,7 @@ function submitReturn(e) {
           quantity: qtyToReturn,
           condition: returnCond,
           problems: returnProbs,
+          boxItems: [],
           isIssued: false,
           exported: false,
         });
@@ -639,19 +965,23 @@ function renderIssueDropdowns() {
     opt.textContent = name;
     lostNameSelect.appendChild(opt);
   });
+
+  updateTransferDropdowns();
 }
 
-// --- RENDER TABLES ---
+// --- RENDER TABLES & PANELS ---
 function renderAll() {
   renderSummaryTable();
   renderMasterTable();
   renderMultiItemSelection();
   renderIssueDropdowns();
+  renderBorrowedList();
   renderLogs();
 }
 
 function renderSummaryTable() {
   const tbody = document.querySelector("#summaryTable tbody");
+  if (!tbody) return;
   tbody.innerHTML = "";
 
   const summary = {};
@@ -693,6 +1023,7 @@ function renderSummaryTable() {
 
 function renderMasterTable() {
   const tbody = document.querySelector("#masterTable tbody");
+  if (!tbody) return;
   tbody.innerHTML = "";
 
   if (inventory.length === 0) {
@@ -711,10 +1042,40 @@ function renderMasterTable() {
       if (item.condition === "Minor Fault") condClass = "cond-minor";
       if (item.condition === "Damaged") condClass = "cond-damaged";
 
+      // Set Integrity Check
+      let isSetIncomplete = false;
+      let missingDetails = [];
+
+      if (item.boxItems) {
+        item.boxItems.forEach((b) => {
+          if (b.originalQty && b.qty < b.originalQty) {
+            isSetIncomplete = true;
+            missingDetails.push(
+              `${b.name} (Missing: ${b.originalQty - b.qty})`,
+            );
+          }
+        });
+      }
+
+      let setIntegrityBadge = isSetIncomplete
+        ? `<div class="mt-1"><span class="badge badge-incomplete"><i class="bi bi-exclamation-triangle-fill me-1"></i>INCOMPLETE SET (${missingDetails.join(", ")})</span></div>`
+        : item.boxItems && item.boxItems.length > 0
+          ? `<div class="mt-1"><span class="badge bg-success bg-opacity-10 text-success border border-success" style="font-size:0.7rem;"><i class="bi bi-check-circle me-1"></i>COMPLETE SET</span></div>`
+          : "";
+
+      let boxChips = "";
+      if (item.boxItems && item.boxItems.length > 0) {
+        boxChips = `<div class="mt-1">${item.boxItems.map((b) => `<span class="box-item-chip"><i class="bi bi-box me-1"></i>${b.name} (${b.qty})</span>`).join("")}</div>`;
+      }
+
       tbody.innerHTML += `
                 <tr>
                     <td class="fw-bold text-primary">${item.serial}</td>
-                    <td>${item.name}</td>
+                    <td>
+                        <div class="fw-bold">${item.name}</div>
+                        ${setIntegrityBadge}
+                        ${boxChips}
+                    </td>
                     <td>
                         <div><span class="condition-badge ${condClass}">${item.condition}</span></div>
                         <small class="text-muted">${item.problems || "No reported issues"}</small>
@@ -730,7 +1091,7 @@ function renderMasterTable() {
                 <tr class="table-warning bg-opacity-10">
                     <td><span class="badge badge-accessory">ACCESSORY</span></td>
                     <td class="fw-bold">${item.name}</td>
-                    <td><small class="text-muted">Consumable Item</small></td>
+                    <td><small class="text-muted">Loose Consumable Item</small></td>
                     <td><span class="badge bg-dark">Qty: ${item.quantity}</span></td>
                     <td>
                         <button class="btn btn-outline-danger btn-sm py-0 px-2" onclick="deleteMasterItem(${item.id})"><i class="bi bi-trash"></i></button>
@@ -744,7 +1105,10 @@ function renderMasterTable() {
 function renderLogs() {
   const pendingTbody = document.querySelector("#pendingLogTable tbody");
   const returnedTbody = document.querySelector("#returnedLogTable tbody");
-  const query = document.getElementById("searchLog").value.toLowerCase();
+  const queryInput = document.getElementById("searchLog");
+  if (!pendingTbody || !returnedTbody || !queryInput) return;
+
+  const query = queryInput.value.toLowerCase();
 
   pendingTbody.innerHTML = "";
   returnedTbody.innerHTML = "";
@@ -787,6 +1151,11 @@ function renderLogs() {
             ? "cond-damaged"
             : "cond-good";
 
+      let boxChips = "";
+      if (log.boxItems && log.boxItems.length > 0) {
+        boxChips = `<div class="mt-1">${log.boxItems.map((b) => `<span class="box-item-chip"><i class="bi bi-box me-1"></i>${b.name} (x${b.qty})</span>`).join("")}</div>`;
+      }
+
       pendingTbody.innerHTML += `
                 <tr class="table-warning bg-opacity-10">
                     <td><small class="fw-bold">${log.issueDate}</small></td>
@@ -799,6 +1168,7 @@ function renderLogs() {
                     <td>
                         <div class="fw-bold">${log.name}</div>
                         <small class="text-muted">Ref/Serial: <b>${log.serial}</b></small>
+                        ${boxChips}
                     </td>
                     <td>
                         <div><span class="condition-badge ${issueCondClass}">${log.issueCondition}</span></div>
@@ -849,6 +1219,11 @@ function renderLogs() {
             ? "cond-damaged"
             : "cond-good";
 
+      let boxChips = "";
+      if (log.boxItems && log.boxItems.length > 0) {
+        boxChips = `<div class="mt-1">${log.boxItems.map((b) => `<span class="box-item-chip"><i class="bi bi-box me-1"></i>${b.name} (x${b.qty})</span>`).join("")}</div>`;
+      }
+
       returnedTbody.innerHTML += `
                 <tr>
                     <td>
@@ -865,6 +1240,7 @@ function renderLogs() {
                     <td>
                         <div class="fw-bold">${log.name}</div>
                         <small class="text-muted">Ref/Serial: <b>${log.serial}</b></small>
+                        ${boxChips}
                     </td>
                     <td>
                         <div><span class="condition-badge ${returnCondClass}">${log.returnCondition}</span></div>
@@ -879,14 +1255,14 @@ function renderLogs() {
 
 // --- RESET WORKFLOW ---
 function triggerResetWorkflow() {
-  if (issueLogs.length === 0) {
+  if (issueLogs.length === 0 && borrowedTransfers.length === 0) {
     alert("No movement or incident logs available to reset.");
     return;
   }
 
   if (
     confirm(
-      "To reset Part 2 Logs, you MUST first download the backup CSV file.\n\nClick OK to open download options.",
+      "To reset Part 2 Logs & Inter-set transfers, you MUST first download the backup CSV file.\n\nClick OK to open download options.",
     )
   ) {
     pendingReset = true;
@@ -894,7 +1270,7 @@ function triggerResetWorkflow() {
   }
 }
 
-// --- EXPORT MODAL & CSV EXPORT ---
+// --- EXPORT MODAL & CSV EXPORT WITH DYNAMIC DAILY TIMESTAMP ---
 function openExportModal() {
   exportModalObj = new bootstrap.Modal(document.getElementById("exportModal"));
   exportModalObj.show();
@@ -927,13 +1303,24 @@ function processExport(e) {
     inventoryToExport = inventory.filter((i) => !i.exported);
   }
 
-  if (logsToExport.length === 0 && inventoryToExport.length === 0) {
+  if (
+    logsToExport.length === 0 &&
+    inventoryToExport.length === 0 &&
+    borrowedTransfers.length === 0
+  ) {
     alert("No new or matching data available for the selected criteria!");
     return;
   }
 
   const now = new Date();
   const generatedAt = now.toLocaleString();
+
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  const hours = String(now.getHours()).padStart(2, "0");
+  const mins = String(now.getMinutes()).padStart(2, "0");
+  const dailyTimestamp = `${year}-${month}-${day}_${hours}-${mins}`;
 
   let csv = `========================================================================================================\n`;
   csv += `                               EQUIPMENT & ASSET MANAGEMENT REPORT                                      \n`;
@@ -945,16 +1332,44 @@ function processExport(e) {
 
   // PART 1
   csv += `--------------------------------------------------------------------------------------------------------\n`;
-  csv += `PART 1: MASTER STOCK INVENTORY\n`;
+  csv += `PART 1: MASTER STOCK INVENTORY & SET INTEGRITY\n`;
   csv += `--------------------------------------------------------------------------------------------------------\n`;
-  csv += `"ITEM TYPE","SERIAL / ID","ITEM NAME","QUANTITY","INITIAL CONDITION","PROBLEM DETAILS","CURRENT STATUS"\n`;
+  csv += `"ITEM TYPE","SERIAL / ID","ITEM NAME","SET INTEGRITY STATUS","BOX ACCESSORIES (CURRENT SET)","QUANTITY","INITIAL CONDITION","PROBLEM DETAILS","CURRENT STATUS"\n`;
 
   if (inventoryToExport.length === 0) {
     csv += `"No inventory items recorded."\n`;
   } else {
     inventoryToExport.forEach((i) => {
-      csv += `"${i.type}","${i.serial}","${i.name}","${i.quantity}","${i.condition}","${i.problems || "None"}","${i.isIssued ? "ISSUED" : "AVAILABLE"}"\n`;
+      let isIncomplete = false;
+      let missingMsg = "COMPLETE SET";
+      if (i.boxItems) {
+        i.boxItems.forEach((b) => {
+          if (b.originalQty && b.qty < b.originalQty) {
+            isIncomplete = true;
+            missingMsg = `INCOMPLETE (Missing ${b.originalQty - b.qty} x ${b.name})`;
+          }
+        });
+      }
+
+      const boxStr = i.boxItems
+        ? i.boxItems.map((b) => `${b.name}(x${b.qty})`).join("; ")
+        : "None";
+      csv += `"${i.type}","${i.serial}","${i.name}","${missingMsg}","${boxStr}","${i.quantity}","${i.condition}","${i.problems || "None"}","${i.isIssued ? "ISSUED" : "AVAILABLE"}"\n`;
       i.exported = true;
+    });
+  }
+  csv += `\n\n`;
+
+  // INTER-SET TRANSFERS SECTION
+  csv += `--------------------------------------------------------------------------------------------------------\n`;
+  csv += `PART 1.5: INTER-SET BORROWED / TRANSFERRED ACCESSORIES\n`;
+  csv += `--------------------------------------------------------------------------------------------------------\n`;
+  csv += `"TRANSFER DATE","ACCESSORY ITEM","QTY","SOURCE SET","DESTINATION SET","REASON","STATUS"\n`;
+  if (borrowedTransfers.length === 0) {
+    csv += `"No inter-set transfers recorded."\n`;
+  } else {
+    borrowedTransfers.forEach((t) => {
+      csv += `"${t.date}","${t.itemName}","${t.qty}","${t.sourceName} (${t.sourceSerial})","${t.destName} (${t.destSerial})","${t.reason}","${t.active ? "OUTSTANDING BORROWED" : "RETURNED TO ORIGINAL SET"}"\n`;
     });
   }
   csv += `\n\n`;
@@ -964,14 +1379,17 @@ function processExport(e) {
   csv += `--------------------------------------------------------------------------------------------------------\n`;
   csv += `PART 2.1: RETURN PENDING / CURRENTLY ISSUED ITEMS\n`;
   csv += `--------------------------------------------------------------------------------------------------------\n`;
-  csv += `"ISSUE GROUP ID","ISSUE DATE","PROJECT ID","TEAM LEADER","RECEIVER PERSON","TEAM MEMBERS","ITEM NAME","SERIAL / REF","ISSUE CONDITION","ISSUE PROBLEMS","REMARKS"\n`;
+  csv += `"ISSUE GROUP ID","ISSUE DATE","PROJECT ID","TEAM LEADER","RECEIVER PERSON","TEAM MEMBERS","ITEM NAME","SERIAL / REF","INCLUDED BOX ACCESSORIES","ISSUE CONDITION","ISSUE PROBLEMS","REMARKS"\n`;
 
   if (pendingLogsToExport.length === 0) {
     csv += `"No pending issued items."\n`;
   } else {
     pendingLogsToExport.forEach((l) => {
       const membersStr = l.members ? l.members.join("; ") : "None";
-      csv += `"${l.groupId || "N/A"}","${l.issueDate}","${l.projectId || "N/A"}","${l.leader}","${l.receiver || ""}","${membersStr}","${l.name}","${l.serial}","${l.issueCondition}","${l.issueProblems || "None"}","${l.remarks || ""}"\n`;
+      const boxStr = l.boxItems
+        ? l.boxItems.map((b) => `${b.name}(x${b.qty})`).join("; ")
+        : "None";
+      csv += `"${l.groupId || "N/A"}","${l.issueDate}","${l.projectId || "N/A"}","${l.leader}","${l.receiver || ""}","${membersStr}","${l.name}","${l.serial}","${boxStr}","${l.issueCondition}","${l.issueProblems || "None"}","${l.remarks || ""}"\n`;
       l.exported = true;
     });
   }
@@ -982,14 +1400,17 @@ function processExport(e) {
   csv += `--------------------------------------------------------------------------------------------------------\n`;
   csv += `PART 2.2: RETURNED & INCIDENT HISTORY LOGS\n`;
   csv += `--------------------------------------------------------------------------------------------------------\n`;
-  csv += `"ISSUE GROUP ID","LOG TYPE","ISSUE DATE","RETURN DATE","PROJECT ID","TEAM LEADER","RECEIVER PERSON","RETURNED BY","MISMATCH REASON","TEAM MEMBERS","ITEM NAME","SERIAL / REF","RETURN CONDITION","RETURN PROBLEMS / INCIDENT DETAILS","FINE / COMP AMOUNT","REMARKS"\n`;
+  csv += `"ISSUE GROUP ID","LOG TYPE","ISSUE DATE","RETURN DATE","PROJECT ID","TEAM LEADER","RECEIVER PERSON","RETURNED BY","MISMATCH REASON","TEAM MEMBERS","ITEM NAME","SERIAL / REF","INCLUDED BOX ACCESSORIES","RETURN CONDITION","RETURN PROBLEMS / INCIDENT DETAILS","FINE / COMP AMOUNT","REMARKS"\n`;
 
   if (historyLogsToExport.length === 0) {
     csv += `"No returned or incident history logs recorded."\n`;
   } else {
     historyLogsToExport.forEach((l) => {
       const membersStr = l.members ? l.members.join("; ") : "None";
-      csv += `"${l.groupId || "N/A"}","${l.type || "ISSUE"}","${l.issueDate}","${l.returnDate || "N/A"}","${l.projectId || "N/A"}","${l.leader}","${l.receiver || ""}","${l.returner || ""}","${l.mismatchReason || "N/A"}","${membersStr}","${l.name}","${l.serial}","${l.returnCondition || "N/A"}","${l.returnProblems || l.issueProblems || "N/A"}","${l.fineAmount || "N/A"}","${l.remarks || ""}"\n`;
+      const boxStr = l.boxItems
+        ? l.boxItems.map((b) => `${b.name}(x${b.qty})`).join("; ")
+        : "None";
+      csv += `"${l.groupId || "N/A"}","${l.type || "ISSUE"}","${l.issueDate}","${l.returnDate || "N/A"}","${l.projectId || "N/A"}","${l.leader}","${l.receiver || ""}","${l.returner || ""}","${l.mismatchReason || "N/A"}","${membersStr}","${l.name}","${l.serial}","${boxStr}","${l.returnCondition || "N/A"}","${l.returnProblems || l.issueProblems || "N/A"}","${l.fineAmount || "N/A"}","${l.remarks || ""}"\n`;
       l.exported = true;
     });
   }
@@ -1028,14 +1449,14 @@ function processExport(e) {
   }
   csv += `\n=================================== END OF REPORT ===================================\n`;
 
-  localStorage.setItem("eq_v8_inventory", JSON.stringify(inventory));
-  localStorage.setItem("eq_v8_logs", JSON.stringify(issueLogs));
+  localStorage.setItem("eq_v10_inventory", JSON.stringify(inventory));
+  localStorage.setItem("eq_v10_logs", JSON.stringify(issueLogs));
 
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.setAttribute("href", url);
-  a.setAttribute("download", `Asset_Management_Report_${selectedMonth}.csv`);
+  a.setAttribute("download", `Asset_Backup_${dailyTimestamp}.csv`);
   a.click();
 
   exportModalObj.hide();
@@ -1043,9 +1464,12 @@ function processExport(e) {
   if (pendingReset) {
     setTimeout(() => {
       if (
-        confirm("CSV Backup Report Downloaded!\n\nClear all Part 2 Logs now?")
+        confirm(
+          "CSV Backup Report Downloaded!\n\nClear all Part 2 Logs & Inter-set Transfers now?",
+        )
       ) {
         issueLogs = [];
+        borrowedTransfers = [];
         saveData();
 
         if (
@@ -1058,9 +1482,14 @@ function processExport(e) {
             .then((snapshot) => {
               snapshot.forEach((doc) => doc.ref.delete());
             });
+          db.collection("asset_transfers")
+            .get()
+            .then((snapshot) => {
+              snapshot.forEach((doc) => doc.ref.delete());
+            });
         }
 
-        alert("Part 2 Movement Logs have been reset!");
+        alert("Part 2 Movement Logs & Inter-set Transfers have been reset!");
       }
       pendingReset = false;
     }, 800);
