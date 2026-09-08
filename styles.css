@@ -249,10 +249,10 @@ table td {
 
 /* LAYOUT CANVAS CLEARANCE FIX */
 main {
-  padding-top: 100px !important;
+  padding-top: 80px !important;
 }
 @media (min-width: 768px) {
   main {
-    padding-top: 112px !important;
+    padding-top: 84px !important;
   }
 }
