@@ -190,6 +190,10 @@
     </nav>
 
     <div class="mt-auto pt-3 border-t border-surface-border flex flex-col gap-1">
+        <button class="flex items-center gap-3 px-3 py-1.5 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left" onclick="handleChangePassword()">
+            <span class="material-symbols-outlined text-base">password</span>
+            <span>Change Password</span>
+        </button>
         <button class="flex items-center gap-3 px-3 py-1.5 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left" onclick="openFirebaseModal()">
             <span class="material-symbols-outlined text-base">settings</span>
             <span>Firebase Config</span>
@@ -1009,7 +1013,10 @@
                 </div>
 
                 <div class="mb-8 text-left group relative">
-                    <label class="block text-xs font-bold text-text-primary mb-1.5 uppercase tracking-wide">Secure Password</label>
+                    <div class="flex justify-between items-end mb-1.5">
+                        <label class="block text-xs font-bold text-text-primary uppercase tracking-wide">Secure Password</label>
+                        <button type="button" class="text-xs font-semibold text-primary hover:text-surface-tint focus:outline-none" onclick="handleForgotPassword()">Forgot Password?</button>
+                    </div>
                     <div class="relative">
                         <input type="password" id="authPassword" class="w-full py-3 pl-11 pr-11 border-2 border-surface-border rounded-xl text-sm font-mono tracking-widest bg-surface transition-all focus:ring-0 focus:border-primary outline-none group-focus-within:border-primary" placeholder="••••••••" required>
                         <span class="material-symbols-outlined absolute left-3.5 top-3 text-text-secondary text-[22px] group-focus-within:text-primary transition-colors">key</span>

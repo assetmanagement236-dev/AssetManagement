@@ -314,11 +314,83 @@ function showAuthError(msg) {
   const alertBox = document.getElementById("authAlert");
   alertBox.textContent = msg;
   alertBox.classList.remove("hidden");
+  alertBox.classList.remove(
+    "bg-status-success/10",
+    "border-status-success/30",
+    "text-status-success",
+  );
   alertBox.classList.add(
     "bg-status-alert/10",
     "border-status-alert/30",
     "text-status-alert",
   );
+}
+
+function showAuthSuccess(msg) {
+  const alertBox = document.getElementById("authAlert");
+  alertBox.textContent = msg;
+  alertBox.classList.remove("hidden");
+  alertBox.classList.remove(
+    "bg-status-alert/10",
+    "border-status-alert/30",
+    "text-status-alert",
+  );
+  alertBox.classList.add(
+    "bg-status-success/10",
+    "border-status-success/30",
+    "text-status-success",
+  );
+}
+
+function handleForgotPassword() {
+  const emailInput = document.getElementById("authEmail").value.trim();
+  if (!emailInput) {
+    showAuthError(
+      "Please enter your workspace email first to reset your password.",
+    );
+    return;
+  }
+  if (!auth) return;
+  auth
+    .sendPasswordResetEmail(emailInput)
+    .then(() => {
+      showAuthSuccess("Password reset email sent! Check your inbox.");
+    })
+    .catch((err) => {
+      showAuthError(err.message);
+    });
+}
+
+function handleChangePassword() {
+  const user = auth.currentUser;
+  if (!user) {
+    alert("You must be logged in to change your password.");
+    return;
+  }
+
+  const newPassword = prompt(
+    "Enter your new secure password (minimum 6 characters):",
+  );
+  if (newPassword) {
+    if (newPassword.length < 6) {
+      alert("Password must be at least 6 characters long.");
+      return;
+    }
+    user
+      .updatePassword(newPassword)
+      .then(() => {
+        alert("Password updated successfully.");
+      })
+      .catch((error) => {
+        if (error.code === "auth/requires-recent-login") {
+          alert(
+            "This action requires a recent login. Please log out and log in again to change your password.",
+          );
+        } else {
+          alert("Error updating password: " + error.message);
+        }
+      });
+  }
 }
 
 function signOutUser() {
