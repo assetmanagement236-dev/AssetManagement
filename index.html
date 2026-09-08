@@ -2,7 +2,7 @@
 <html class="light" lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />
     <title>AssetManagement</title>
 
     <!-- PWA Web App Manifest -->
@@ -235,60 +235,63 @@
           Issue
         </button>
 
-        <nav class="flex-1 flex flex-col gap-1 min-h-min pb-4">
+        <nav class="flex-1 flex flex-col gap-1 min-h-min pb-4" id="mainSideNav">
           <button
-            class="flex items-center gap-3 px-3 py-2 text-text-primary bg-primary-container/10 font-semibold rounded-lg transition-all text-xs w-full text-left"
+            class="nav-tab-btn flex items-center gap-3 px-3 py-2 text-text-primary bg-primary-container/10 font-semibold rounded-lg transition-all text-xs w-full text-left active-nav"
+            data-target="master-section"
             onclick="
               switchToTab('master-section');
               toggleMobileSidebar();
             "
           >
-            <span class="material-symbols-outlined text-primary text-lg"
+            <span class="nav-icon material-symbols-outlined text-primary text-lg"
               >inventory_2</span
             >
             <span>Master Inventory</span>
           </button>
           <button
-            class="flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left"
+            class="nav-tab-btn flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left"
+            data-target="issue-tab"
             onclick="
               switchToTab('issue-tab');
               toggleMobileSidebar();
             "
           >
-            <span class="material-symbols-outlined text-lg">output</span>
+            <span class="nav-icon material-symbols-outlined text-lg">output</span>
             <span>Issue Equipment</span>
           </button>
           <button
-            class="flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left"
+            class="nav-tab-btn flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left"
+            data-target="transfer-tab"
             onclick="
               switchToTab('transfer-tab');
               toggleMobileSidebar();
             "
           >
-            <span class="material-symbols-outlined text-lg">move_down</span>
+            <span class="nav-icon material-symbols-outlined text-lg">move_down</span>
             <span>Inter-Set Transfers</span>
           </button>
           <button
-            class="flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left"
+            class="nav-tab-btn flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left"
+            data-target="history-section"
             onclick="
               switchToTab('history-section');
               toggleMobileSidebar();
             "
           >
-            <span class="material-symbols-outlined text-lg">history</span>
+            <span class="nav-icon material-symbols-outlined text-lg">history</span>
             <span>Return & History</span>
           </button>
           <button
-            class="flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left"
+            class="nav-tab-btn flex items-center gap-3 px-3 py-2 text-status-alert hover:bg-status-alert/10 transition-all rounded-lg text-xs w-full text-left"
+            data-target="lost-tab"
             onclick="
               switchToTab('lost-tab');
               toggleMobileSidebar();
             "
           >
-            <span class="material-symbols-outlined text-status-alert text-lg"
-              >report_problem</span
-            >
-            <span class="text-status-alert font-medium">Report Lost</span>
+            <span class="nav-icon material-symbols-outlined text-lg">report</span>
+            <span>Report Lost</span>
           </button>
           <button
             id="pwaInstallSidebarBtn"
@@ -2256,23 +2259,45 @@
     <!-- Helper script for Tab Switching in Side Navigation -->
     <script>
       function switchToTab(tabId) {
+        // Handle Active Class Styling
+        document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+          if (btn.getAttribute('data-target') === tabId) {
+            btn.classList.add('text-text-primary', 'bg-primary-container/10', 'font-semibold', 'active-nav');
+            btn.classList.remove('text-text-secondary', 'hover:bg-surface-container-low');
+            let icon = btn.querySelector('.nav-icon');
+            if(icon && tabId !== 'lost-tab') icon.classList.add('text-primary'); // Report Lost keeps its alert color
+          } else {
+            if(!btn.classList.contains('text-status-alert')) { 
+              btn.classList.remove('text-text-primary', 'bg-primary-container/10', 'font-semibold', 'active-nav');
+              btn.classList.add('text-text-secondary', 'hover:bg-surface-container-low');
+              let icon = btn.querySelector('.nav-icon');
+              if(icon) icon.classList.remove('text-primary');
+            }
+          }
+        });
+
+        const offset = 80;
+
         if (tabId === "master-section") {
-          document
-            .getElementById("master-section")
-            .scrollIntoView({ behavior: "smooth" });
+          const el = document.getElementById("master-section");
+          window.scrollTo({ top: el.offsetTop - offset, behavior: "smooth" });
           return;
         }
         if (tabId === "history-section") {
-          document
-            .getElementById("history-section")
-            .scrollIntoView({ behavior: "smooth" });
+          const el = document.getElementById("history-section");
+          window.scrollTo({ top: el.offsetTop - offset, behavior: "smooth" });
           return;
         }
+        
         const btn = document.getElementById(tabId);
         if (btn) {
           const bsTab = new bootstrap.Tab(btn);
           bsTab.show();
-          btn.scrollIntoView({ behavior: "smooth" });
+          const targetPaneId = btn.getAttribute('data-bs-target').replace('#', '');
+          const paneEl = document.getElementById(targetPaneId);
+          if (paneEl) {
+              window.scrollTo({ top: paneEl.offsetTop - offset, behavior: "smooth" });
+          }
         }
       }
     </script>
