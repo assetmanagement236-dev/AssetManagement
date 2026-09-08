@@ -1761,3 +1761,85 @@ if ("serviceWorker" in navigator) {
       );
   });
 }
+
+// --- COMPANY ACCESS SECURITY & OPERATOR SESSION MANAGEMENT ---
+const DEFAULT_COMPANY_PIN = "1234";
+
+function getCompanyPIN() {
+  return localStorage.getItem("eq_company_pin") || DEFAULT_COMPANY_PIN;
+}
+
+function updateCompanyPINFromUI() {
+  const pinInput = document.getElementById("cfg_company_pin");
+  if (!pinInput || !pinInput.value.trim()) {
+    alert("Please enter a valid 4-8 digit Company Security PIN.");
+    return;
+  }
+  const newPin = pinInput.value.trim();
+  if (newPin.length < 4) {
+    alert("PIN must be at least 4 digits/characters.");
+    return;
+  }
+  localStorage.setItem("eq_company_pin", newPin);
+  alert(`✅ Company Security PIN updated successfully! New PIN is: ${newPin}`);
+  pinInput.value = "";
+}
+
+function getCurrentOperator() {
+  return sessionStorage.getItem("eq_current_operator") || "Authorized Staff";
+}
+
+function checkSessionAuth() {
+  const isAuth = sessionStorage.getItem("eq_company_authenticated") === "true";
+  const lockScreen = document.getElementById("authLockScreen");
+  const operatorBadge = document.getElementById("activeOperatorName");
+
+  if (operatorBadge) {
+    operatorBadge.textContent = getCurrentOperator();
+  }
+
+  if (lockScreen) {
+    if (isAuth) {
+      lockScreen.classList.add("hidden");
+    } else {
+      lockScreen.classList.remove("hidden");
+    }
+  }
+}
+
+function authenticateSession(e) {
+  e.preventDefault();
+  const nameInput = document.getElementById("auth_operator_name");
+  const pinInput = document.getElementById("auth_security_pin");
+  const errorMsg = document.getElementById("authErrorMsg");
+
+  if (!nameInput || !pinInput) return;
+
+  const operatorName = nameInput.value.trim();
+  const enteredPin = pinInput.value.trim();
+  const validPin = getCompanyPIN();
+
+  if (enteredPin === validPin) {
+    sessionStorage.setItem("eq_company_authenticated", "true");
+    sessionStorage.setItem("eq_current_operator", operatorName);
+    if (errorMsg) errorMsg.classList.add("hidden");
+    checkSessionAuth();
+    pinInput.value = "";
+  } else {
+    if (errorMsg) {
+      errorMsg.classList.remove("hidden");
+      errorMsg.textContent = "❌ Incorrect Security PIN! Default PIN is 1234";
+    }
+  }
+}
+
+function lockAppSession() {
+  sessionStorage.removeItem("eq_company_authenticated");
+  checkSessionAuth();
+}
+
+// Auto-check authentication status on load
+document.addEventListener("DOMContentLoaded", () => {
+  checkSessionAuth();
+});
+checkSessionAuth();
