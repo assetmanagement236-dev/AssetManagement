@@ -105,90 +105,121 @@
 
 <!-- TopNavBar -->
 <nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-8 h-16 bg-background border-b border-surface-border shadow-sm">
-    <div class="flex items-center gap-3 shrink-0">
-        <span class="material-symbols-outlined text-primary text-3xl">inventory_2</span>
-        <span class="text-lg md:text-2xl font-bold text-primary tracking-tight whitespace-nowrap">Kinetic Asset Intelligence</span>
+    <div class="flex items-center gap-2 md:gap-3 shrink-0">
+        <!-- Mobile Sidebar Toggle Button -->
+        <button class="md:hidden p-1.5 rounded-lg text-text-secondary hover:text-primary hover:bg-surface-container-low" onclick="toggleMobileSidebar()" title="Toggle Navigation">
+            <span class="material-symbols-outlined text-2xl">menu</span>
+        </button>
+
+        <span class="material-symbols-outlined text-primary text-2xl md:text-3xl">inventory_2</span>
+        <span class="text-base md:text-xl font-bold text-primary tracking-tight whitespace-nowrap">Kinetic Asset Intelligence</span>
     </div>
     
-    <div class="flex items-center gap-2 md:gap-3 flex-nowrap overflow-x-auto py-1">
+    <div class="flex items-center gap-2 md:gap-3 shrink-0">
         <!-- Firebase Status Badge -->
-        <span id="firebaseStatusBadge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-surface-container-low text-text-secondary border border-surface-border cursor-pointer hover:bg-surface-border transition-colors whitespace-nowrap" onclick="openFirebaseModal()">
-            <span class="w-2 h-2 rounded-full bg-status-warning block"></span> Local Mode
+        <span id="firebaseStatusBadge" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-low text-text-secondary border border-surface-border cursor-pointer hover:bg-surface-border transition-colors whitespace-nowrap" onclick="openFirebaseModal()">
+            <span class="w-2 h-2 rounded-full bg-status-warning block"></span> <span class="hidden sm:inline">Local Mode</span>
         </span>
 
-        <button id="pwaInstallBtn" class="hidden md:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-status-success text-status-success hover:bg-status-success hover:text-white transition-colors text-xs font-semibold whitespace-nowrap" onclick="installPWA()">
+        <button id="pwaInstallBtn" class="hidden lg:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-status-success text-status-success hover:bg-status-success hover:text-white transition-colors text-xs font-semibold whitespace-nowrap" onclick="installPWA()">
             <span class="material-symbols-outlined text-sm">install_mobile</span> Install App
         </button>
 
-        <button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-surface-border text-text-secondary hover:text-primary hover:bg-surface-container-low transition-colors text-xs font-semibold whitespace-nowrap" onclick="openFirebaseModal()">
-            <span class="material-symbols-outlined text-sm">cloud_upload</span> Firebase Connect
+        <button class="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-surface-border text-text-secondary hover:text-primary hover:bg-surface-container-low transition-colors text-xs font-semibold whitespace-nowrap" onclick="openFirebaseModal()">
+            <span class="material-symbols-outlined text-sm">cloud_upload</span> Firebase
         </button>
 
-        <button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-surface-border text-text-secondary hover:text-primary hover:bg-surface-container-low transition-colors text-xs font-semibold whitespace-nowrap" onclick="openExportModal()">
-            <span class="material-symbols-outlined text-sm">table_chart</span> Export CSV
+        <button class="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-surface-border text-text-secondary hover:text-primary hover:bg-surface-container-low transition-colors text-xs font-semibold whitespace-nowrap" onclick="openExportModal()">
+            <span class="material-symbols-outlined text-sm">table_chart</span> Export
         </button>
 
-        <button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-status-alert/30 text-status-alert hover:bg-status-alert hover:text-white transition-colors text-xs font-semibold whitespace-nowrap" onclick="triggerResetWorkflow()">
-            <span class="material-symbols-outlined text-sm">restart_alt</span> Reset Logs
+        <button class="hidden md:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-status-alert/30 text-status-alert hover:bg-status-alert hover:text-white transition-colors text-xs font-semibold whitespace-nowrap" onclick="triggerResetWorkflow()">
+            <span class="material-symbols-outlined text-sm">restart_alt</span> Reset
         </button>
 
-        <button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container-low text-text-secondary hover:text-primary transition-colors shrink-0" title="Sync Data" onclick="location.reload()">
-            <span class="material-symbols-outlined text-xl">sync</span>
+        <button class="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full hover:bg-surface-container-low text-text-secondary hover:text-primary transition-colors shrink-0" title="Sync Data" onclick="location.reload()">
+            <span class="material-symbols-outlined text-lg md:text-xl">sync</span>
         </button>
 
-        <div class="w-8 h-8 rounded-full overflow-hidden border border-surface-border shrink-0">
+        <div class="w-7 h-7 md:w-8 md:h-8 rounded-full overflow-hidden border border-surface-border shrink-0">
             <img alt="User Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_nT8ws0may6hlhqyLdl_3FX4So4P7RrrI95G0xgMsQt57N2S6CZ9gOoTMn-yBV5GDoYJKTxDc84SlxdzFDxgfCxQSLxGLxdT6oew8nOa875OSMj3sFHFZ_AapfTDPULm1Kx_AHdnnUdqKLftxJ2cnQDck7ZelF7Z5O_H3ktwUIr0UPLXEV0ORPG0jxlEVTKyc2dysA1ETe6UInCni880xpq3xTgEqNGY4BC9scTIrAWm4Qm-zWYmpX59IIkDwAn710j6sy0o-tr0a"/>
         </div>
     </div>
 </nav>
 
-<!-- SideNavBar -->
-<aside class="hidden md:flex fixed left-0 top-16 h-[calc(100vh-64px)] w-64 flex-col p-4 z-40 bg-surface-container-lowest border-r border-surface-border">
-    <div class="mb-6 px-4">
-        <h2 class="text-sm font-bold text-text-primary uppercase tracking-wider">Control Center</h2>
-        <div class="text-xs text-status-success font-medium flex items-center gap-1.5 mt-1">
-            <span class="w-2 h-2 rounded-full bg-status-success block"></span> Active Session
+<!-- Mobile Overlay BackDrop -->
+<div id="mobileBackdrop" class="fixed inset-0 bg-black/40 z-30 hidden md:hidden" onclick="toggleMobileSidebar()"></div>
+
+<!-- SideNavBar (Desktop & Mobile Drawer) -->
+<aside id="sidebarDrawer" class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 flex flex-col p-4 z-40 bg-surface-container-lowest border-r border-surface-border -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out">
+    <div class="mb-4 px-2 flex justify-between items-center">
+        <div>
+            <h2 class="text-xs font-bold text-text-primary uppercase tracking-wider">Control Center</h2>
+            <div class="text-xs text-status-success font-medium flex items-center gap-1.5 mt-0.5">
+                <span class="w-2 h-2 rounded-full bg-status-success block"></span> Active Session
+            </div>
         </div>
+        <button class="md:hidden p-1 rounded hover:bg-surface-container-low text-text-secondary" onclick="toggleMobileSidebar()">
+            <span class="material-symbols-outlined text-lg">close</span>
+        </button>
     </div>
 
-    <button class="w-full bg-primary-container text-on-primary py-2.5 rounded-lg text-sm font-bold hover:bg-primary transition-colors mb-6 shadow-sm flex items-center justify-center gap-2" onclick="switchToTab('issue-tab')">
+    <button class="w-full bg-primary-container text-on-primary py-2.5 rounded-lg text-xs font-bold hover:bg-primary transition-colors mb-4 shadow-sm flex items-center justify-center gap-2" onclick="switchToTab('issue-tab'); toggleMobileSidebar()">
         <span class="material-symbols-outlined text-sm">add</span> New Asset Issue
     </button>
 
-    <nav class="flex-1 flex flex-col gap-1.5">
-        <button class="flex items-center gap-3 px-4 py-2.5 text-text-primary bg-primary-container/10 font-semibold rounded-lg transition-all text-sm w-full text-left" onclick="switchToTab('master-section')">
-            <span class="material-symbols-outlined text-primary text-xl">inventory_2</span>
+    <nav class="flex-1 flex flex-col gap-1 overflow-y-auto">
+        <button class="flex items-center gap-3 px-3 py-2 text-text-primary bg-primary-container/10 font-semibold rounded-lg transition-all text-xs w-full text-left" onclick="switchToTab('master-section'); toggleMobileSidebar()">
+            <span class="material-symbols-outlined text-primary text-lg">inventory_2</span>
             <span>Master Inventory</span>
         </button>
-        <button class="flex items-center gap-3 px-4 py-2.5 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-sm w-full text-left" onclick="switchToTab('issue-tab')">
-            <span class="material-symbols-outlined text-xl">output</span>
+        <button class="flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left" onclick="switchToTab('issue-tab'); toggleMobileSidebar()">
+            <span class="material-symbols-outlined text-lg">output</span>
             <span>Issue Equipment</span>
         </button>
-        <button class="flex items-center gap-3 px-4 py-2.5 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-sm w-full text-left" onclick="switchToTab('transfer-tab')">
-            <span class="material-symbols-outlined text-xl">move_down</span>
+        <button class="flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left" onclick="switchToTab('transfer-tab'); toggleMobileSidebar()">
+            <span class="material-symbols-outlined text-lg">move_down</span>
             <span>Inter-Set Transfers</span>
         </button>
-        <button class="flex items-center gap-3 px-4 py-2.5 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-sm w-full text-left" onclick="switchToTab('history-section')">
-            <span class="material-symbols-outlined text-xl">history</span>
+        <button class="flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left" onclick="switchToTab('history-section'); toggleMobileSidebar()">
+            <span class="material-symbols-outlined text-lg">history</span>
             <span>Return & History</span>
         </button>
-        <button class="flex items-center gap-3 px-4 py-2.5 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-sm w-full text-left" onclick="switchToTab('lost-tab')">
-            <span class="material-symbols-outlined text-status-alert text-xl">report_problem</span>
+        <button class="flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left" onclick="switchToTab('lost-tab'); toggleMobileSidebar()">
+            <span class="material-symbols-outlined text-status-alert text-lg">report_problem</span>
             <span class="text-status-alert font-medium">Report Lost</span>
         </button>
     </nav>
 
-    <div class="mt-auto pt-4 border-t border-surface-border flex flex-col gap-1">
-        <button class="flex items-center gap-3 px-4 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left" onclick="openFirebaseModal()">
+    <div class="mt-auto pt-3 border-t border-surface-border flex flex-col gap-1">
+        <button class="flex items-center gap-3 px-3 py-1.5 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left" onclick="openFirebaseModal()">
             <span class="material-symbols-outlined text-base">settings</span>
             <span>Firebase Config</span>
         </button>
-        <button class="flex items-center gap-3 px-4 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left" onclick="openExportModal()">
+        <button class="flex items-center gap-3 px-3 py-1.5 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left" onclick="openExportModal()">
             <span class="material-symbols-outlined text-base">download</span>
             <span>Export Backup</span>
         </button>
+        <button class="flex items-center gap-3 px-3 py-1.5 text-status-alert hover:bg-status-alert/10 transition-all rounded-lg text-xs w-full text-left" onclick="triggerResetWorkflow()">
+            <span class="material-symbols-outlined text-base">restart_alt</span>
+            <span>Reset Logs</span>
+        </button>
     </div>
 </aside>
+
+<!-- Helper Script for Mobile Sidebar -->
+<script>
+    function toggleMobileSidebar() {
+        const sidebar = document.getElementById('sidebarDrawer');
+        const backdrop = document.getElementById('mobileBackdrop');
+        if (sidebar) {
+            sidebar.classList.toggle('-translate-x-full');
+        }
+        if (backdrop) {
+            backdrop.classList.toggle('hidden');
+        }
+    }
+</script>
 
 <!-- Main Content Canvas -->
 <main class="md:ml-64 pt-20 md:pt-24 min-h-screen p-4 md:p-8 bg-surface">
