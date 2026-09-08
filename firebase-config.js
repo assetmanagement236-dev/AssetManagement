@@ -57,7 +57,10 @@ function initFirebase() {
         const splash = document.getElementById("initSplashScreen");
         if (splash) {
           splash.style.opacity = "0";
-          setTimeout(() => splash.classList.add("hidden"), 300);
+          setTimeout(() => {
+            splash.style.display = "none";
+            splash.classList.add("hidden");
+          }, 300);
         }
 
         if (user) {
