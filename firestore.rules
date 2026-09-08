@@ -1,0 +1,21 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Top level users collection
+    match /users/{userId} {
+      // Allow read/write only if the authenticated user's UID matches the document ID
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Cascade rules down to all subcollections inside the user's document
+      // (e.g. asset_inventory, asset_logs, asset_transfers)
+      match /{subcollection}/{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+    
+    // Deny access to any other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

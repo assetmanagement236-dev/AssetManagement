@@ -1,22 +1,33 @@
-// Data Storage Architecture (V10 with V8 Migration Fallback)
-let inventory =
-  JSON.parse(localStorage.getItem("eq_v10_inventory")) ||
-  JSON.parse(localStorage.getItem("eq_v8_inventory")) ||
-  [];
-let issueLogs =
-  JSON.parse(localStorage.getItem("eq_v10_logs")) ||
-  JSON.parse(localStorage.getItem("eq_v8_logs")) ||
-  [];
-let borrowedTransfers =
-  JSON.parse(localStorage.getItem("eq_v10_transfers")) || [];
-let customSuggestions =
-  JSON.parse(localStorage.getItem("eq_v10_custom_suggestions")) ||
-  JSON.parse(localStorage.getItem("eq_v8_custom_suggestions")) ||
-  [];
+// Data Storage Architecture (V10 with FirebaseAuth Isolation)
+let inventory = [];
+let issueLogs = [];
+let borrowedTransfers = [];
+let customSuggestions = [];
 let currentTeamMembers = [];
 let currentBoxItems = [];
 let pendingReset = false;
 let exportModalObj, manageSuggestionsModalObj, returnModalObj, firebaseModalObj;
+
+function loadData() {
+  const uid =
+    typeof currentUserUID !== "undefined" && currentUserUID
+      ? currentUserUID
+      : "anonymous";
+
+  inventory = JSON.parse(localStorage.getItem(`eq_inventory_${uid}`)) || [];
+  issueLogs = JSON.parse(localStorage.getItem(`eq_logs_${uid}`)) || [];
+  borrowedTransfers =
+    JSON.parse(localStorage.getItem(`eq_transfers_${uid}`)) || [];
+  customSuggestions =
+    JSON.parse(localStorage.getItem(`eq_custom_suggestions_${uid}`)) || [];
+
+  if (typeof renderAll === "function") {
+    renderAll();
+  }
+}
+
+// Initial fallback load
+loadData();
 
 // Set Default Dates
 document.getElementById("i_date").valueAsDate = new Date();
@@ -27,11 +38,19 @@ const today = new Date();
 document.getElementById("exp_month").value = today.toISOString().slice(0, 7);
 
 function saveData() {
-  localStorage.setItem("eq_v10_inventory", JSON.stringify(inventory));
-  localStorage.setItem("eq_v10_logs", JSON.stringify(issueLogs));
-  localStorage.setItem("eq_v10_transfers", JSON.stringify(borrowedTransfers));
+  const uid =
+    typeof currentUserUID !== "undefined" && currentUserUID
+      ? currentUserUID
+      : "anonymous";
+
+  localStorage.setItem(`eq_inventory_${uid}`, JSON.stringify(inventory));
+  localStorage.setItem(`eq_logs_${uid}`, JSON.stringify(issueLogs));
   localStorage.setItem(
-    "eq_v10_custom_suggestions",
+    `eq_transfers_${uid}`,
+    JSON.stringify(borrowedTransfers),
+  );
+  localStorage.setItem(
+    `eq_custom_suggestions_${uid}`,
     JSON.stringify(customSuggestions),
   );
 
@@ -566,15 +585,8 @@ function deleteMasterItem(id) {
   if (confirm("Delete this item permanently from inventory?")) {
     inventory = inventory.filter((i) => i.id !== id);
     saveData();
-    if (
-      typeof isFirebaseConnected !== "undefined" &&
-      isFirebaseConnected &&
-      db
-    ) {
-      db.collection("asset_inventory")
-        .doc(String(id))
-        .delete()
-        .catch((err) => console.error("Firebase doc delete error:", err));
+    if (typeof deleteFromFirebase === "function") {
+      deleteFromFirebase("asset_inventory", id);
     }
   }
 }
@@ -1766,7 +1778,7 @@ function processExport(e) {
     setTimeout(() => {
       if (
         confirm(
-          "CSV Backup Report Downloaded!\n\nClear all Part 2 Logs & Inter-set Transfers now?",
+          "Are you absolutely sure? This will delete all history forever.",
         )
       ) {
         issueLogs = [];
@@ -1776,18 +1788,23 @@ function processExport(e) {
         if (
           typeof isFirebaseConnected !== "undefined" &&
           isFirebaseConnected &&
-          db
+          typeof getUserDb === "function"
         ) {
-          db.collection("asset_logs")
-            .get()
-            .then((snapshot) => {
-              snapshot.forEach((doc) => doc.ref.delete());
-            });
-          db.collection("asset_transfers")
-            .get()
-            .then((snapshot) => {
-              snapshot.forEach((doc) => doc.ref.delete());
-            });
+          const userDb = getUserDb();
+          if (userDb) {
+            userDb
+              .collection("asset_logs")
+              .get()
+              .then((snapshot) => {
+                snapshot.forEach((doc) => doc.ref.delete());
+              });
+            userDb
+              .collection("asset_transfers")
+              .get()
+              .then((snapshot) => {
+                snapshot.forEach((doc) => doc.ref.delete());
+              });
+          }
         }
 
         alert("Part 2 Movement Logs & Inter-set Transfers have been reset!");
