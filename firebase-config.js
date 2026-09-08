@@ -65,11 +65,13 @@ function updateFirebaseStatusUI(isConnected, text) {
   const badge = document.getElementById("firebaseStatusBadge");
   if (!badge) return;
   if (isConnected) {
-    badge.className = "badge bg-success me-2";
-    badge.innerHTML = `<i class="bi bi-cloud-check-fill me-1"></i> ${text}`;
+    badge.className =
+      "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-status-success/15 text-status-success border border-status-success/30 cursor-pointer hover:bg-status-success/25 transition-colors whitespace-nowrap";
+    badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-status-success block"></span> <span class="hidden sm:inline">${text}</span>`;
   } else {
-    badge.className = "badge bg-secondary me-2";
-    badge.innerHTML = `<i class="bi bi-hdd-network me-1"></i> ${text}`;
+    badge.className =
+      "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-low text-text-secondary border border-surface-border cursor-pointer hover:bg-surface-border transition-colors whitespace-nowrap";
+    badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-status-warning block"></span> <span class="hidden sm:inline">${text}</span>`;
   }
 }
 
