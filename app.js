@@ -43,22 +43,26 @@ function saveData() {
   renderAll();
 }
 
+function formatSerialText(offSerial, eqSerial) {
+  let parts = [];
+  if (offSerial && offSerial !== "N/A") parts.push(`Off SN: ${offSerial}`);
+  if (eqSerial && eqSerial !== "N/A") parts.push(`Eq SN: ${eqSerial}`);
+  return parts.length > 0 ? parts.join(" | ") : "N/A";
+}
+
 function toggleItemTypeFields() {
   const type = document.getElementById("m_type").value;
   const eqFields = document.getElementById("equipment_fields");
   const accFields = document.getElementById("accessory_fields");
-  const serialInput = document.getElementById("m_serial");
   const qtyInput = document.getElementById("m_qty");
 
   if (type === "EQUIPMENT") {
     eqFields.classList.remove("d-none");
     accFields.classList.add("d-none");
-    serialInput.setAttribute("required", "required");
     qtyInput.removeAttribute("required");
   } else {
     eqFields.classList.add("d-none");
     accFields.classList.remove("d-none");
-    serialInput.removeAttribute("required");
     qtyInput.setAttribute("required", "required");
   }
 }
@@ -250,15 +254,18 @@ function updateTransferDropdowns() {
   toSelect.innerHTML = '<option value="">-- Select Destination Set --</option>';
 
   equipmentList.forEach((eq) => {
-    const hasItems = eq.boxItems && eq.boxItems.length > 0;
+    const serials = formatSerialText(eq.serial, eq.equipmentSerial);
+    const modelStr =
+      eq.model && eq.model !== "N/A" ? `(Model: ${eq.model}) ` : "";
+
     const optFrom = document.createElement("option");
     optFrom.value = eq.id;
-    optFrom.textContent = `${eq.name} (${eq.serial}) ${hasItems ? `[${eq.boxItems.length} box items]` : "[No box items]"}`;
+    optFrom.textContent = `${eq.name} ${modelStr}(${serials})`;
     fromSelect.appendChild(optFrom);
 
     const optTo = document.createElement("option");
     optTo.value = eq.id;
-    optTo.textContent = `${eq.name} (${eq.serial})`;
+    optTo.textContent = `${eq.name} ${modelStr}(${serials})`;
     toSelect.appendChild(optTo);
   });
 
@@ -468,25 +475,34 @@ function addMasterItem(e) {
   }
 
   if (itemType === "EQUIPMENT") {
-    const serial = document.getElementById("m_serial").value.trim();
+    const model = document.getElementById("m_model").value.trim() || "N/A";
+    const serial = document.getElementById("m_serial").value.trim() || "N/A";
+    const equipmentSerial =
+      document.getElementById("m_eq_serial").value.trim() || "N/A";
     const condition = document.getElementById("m_condition").value;
     const problems = document.getElementById("m_problems").value.trim();
 
-    const duplicateItem = inventory.find(
-      (item) =>
-        item.type === "EQUIPMENT" &&
-        item.serial.toLowerCase() === serial.toLowerCase(),
-    );
-    if (duplicateItem) {
-      alert(`⚠️ Warning: Duplicate Serial Number "${serial}" exists!`);
-      return;
+    if (serial !== "N/A") {
+      const duplicateItem = inventory.find(
+        (item) =>
+          item.type === "EQUIPMENT" &&
+          item.serial &&
+          item.serial !== "N/A" &&
+          item.serial.toLowerCase() === serial.toLowerCase(),
+      );
+      if (duplicateItem) {
+        alert(`⚠️ Warning: Duplicate Office Serial Number "${serial}" exists!`);
+        return;
+      }
     }
 
     inventory.push({
       id: Date.now(),
       type: "EQUIPMENT",
       name: name,
+      model: model,
       serial: serial,
+      equipmentSerial: equipmentSerial,
       quantity: 1,
       condition: condition,
       problems: problems || "No reported issues",
@@ -495,12 +511,14 @@ function addMasterItem(e) {
       exported: false,
     });
 
+    document.getElementById("m_model").value = "";
     document.getElementById("m_serial").value = "";
+    document.getElementById("m_eq_serial").value = "";
     document.getElementById("m_problems").value = "";
     currentBoxItems = [];
     renderBoxItemChips();
     alert(
-      `✅ ${name} (Serial: ${serial}) added to inventory with ${currentBoxItems.length} box item(s).`,
+      `✅ ${name} ${model !== "N/A" ? `(${model})` : ""} added to master inventory.`,
     );
   } else {
     const qty = parseInt(document.getElementById("m_qty").value);
@@ -518,7 +536,9 @@ function addMasterItem(e) {
         id: Date.now(),
         type: "ACCESSORY",
         name: name,
+        model: "N/A",
         serial: "N/A",
+        equipmentSerial: "N/A",
         quantity: qty,
         condition: "Good",
         problems: "Standard Stock",
@@ -589,12 +609,16 @@ function renderMultiItemSelection() {
         boxChips = `<div class="mt-1">${item.boxItems.map((b) => `<span class="box-item-chip"><i class="bi bi-box me-1"></i>${b.name} (${b.qty})</span>`).join("")}</div>`;
       }
 
+      const serialsStr = formatSerialText(item.serial, item.equipmentSerial);
+      const modelStr =
+        item.model && item.model !== "N/A" ? `Model: ${item.model} | ` : "";
+
       html += `
                 <div class="form-check py-1 border-bottom border-light">
                     <input class="form-check-input issue-checkbox" type="checkbox" data-type="EQUIPMENT" data-id="${item.id}" id="chk_${item.id}">
                     <label class="form-check-label w-100" for="chk_${item.id}">
                         <div class="d-flex justify-content-between align-items-center">
-                            <span><strong>${item.name}</strong> <small class="text-primary">(Serial: ${item.serial})</small></span>
+                            <span><strong>${item.name}</strong> <small class="text-primary">(${modelStr}${serialsStr})</small></span>
                             <span class="badge bg-light text-dark border">${item.condition}</span>
                         </div>
                         ${boxChips}
@@ -682,7 +706,9 @@ function issueEquipment(e) {
         projectId: projectId,
         members: [...currentTeamMembers],
         name: item.name,
-        serial: item.serial,
+        model: item.model || "N/A",
+        serial: item.serial || "N/A",
+        equipmentSerial: item.equipmentSerial || "N/A",
         boxItems: item.boxItems
           ? JSON.parse(JSON.stringify(item.boxItems))
           : [],
@@ -723,7 +749,9 @@ function issueEquipment(e) {
         projectId: projectId,
         members: [...currentTeamMembers],
         name: item.name,
+        model: "N/A",
         serial: `ACC-ISSUE (Qty: ${issueQty})`,
+        equipmentSerial: "N/A",
         boxItems: [],
         issueCondition: "Good",
         issueProblems: `Issued Quantity: ${issueQty}`,
@@ -773,10 +801,11 @@ function updateLostSerialDropdown() {
   list.forEach((i) => {
     const opt = document.createElement("option");
     if (i.type === "EQUIPMENT") {
-      opt.value = i.serial;
-      opt.textContent = `Serial: ${i.serial} ${i.isIssued ? "(Issued)" : "(In Stock)"}`;
+      opt.value = i.id;
+      const serialsStr = formatSerialText(i.serial, i.equipmentSerial);
+      opt.textContent = `${i.model && i.model !== "N/A" ? `Model: ${i.model} | ` : ""}${serialsStr} ${i.isIssued ? "(Issued)" : "(In Stock)"}`;
     } else {
-      opt.value = i.name;
+      opt.value = i.id;
       opt.textContent = `Accessory Stock (${i.quantity} available)`;
     }
     serialSelect.appendChild(opt);
@@ -789,16 +818,15 @@ function updateLostBoxItemsDropdown() {
   const targetType = document.getElementById("l_target_type").value;
   if (targetType !== "BOX_ITEM") return;
 
-  const selectedName = document.getElementById("l_name").value;
-  const selectedSerial = document.getElementById("l_serial").value;
+  const selectedId = parseInt(document.getElementById("l_serial").value);
   const boxItemSelect = document.getElementById("l_box_item");
 
   boxItemSelect.innerHTML =
     '<option value="">-- Select Box Accessory --</option>';
 
-  const item = inventory.find(
-    (i) => i.name === selectedName && i.serial === selectedSerial,
-  );
+  if (!selectedId) return;
+
+  const item = inventory.find((i) => i.id === selectedId);
   if (item && item.boxItems && item.boxItems.length > 0) {
     item.boxItems.forEach((b, idx) => {
       if (b.qty > 0) {
@@ -820,15 +848,16 @@ function reportLostEquipment(e) {
   const person = document.getElementById("l_person").value.trim();
   const targetType = document.getElementById("l_target_type").value;
   const name = document.getElementById("l_name").value;
-  const serial = document.getElementById("l_serial").value;
+  const itemVal = document.getElementById("l_serial").value;
   const incident = document.getElementById("l_incident").value.trim();
   const fir = document.getElementById("l_fir").value.trim() || "N/A";
   const recovery = document.getElementById("l_recovery").value;
   const fineAmount =
     document.getElementById("l_fine_amount").value.trim() || "N/A";
 
+  const itemId = parseInt(itemVal);
   const itemIndex = inventory.findIndex(
-    (i) => i.name === name && (i.serial === serial || i.type === "ACCESSORY"),
+    (i) => i.id === itemId || (i.name === name && i.type === "ACCESSORY"),
   );
 
   if (itemIndex === -1) {
@@ -857,7 +886,7 @@ function reportLostEquipment(e) {
 
     if (
       !confirm(
-        `Are you sure you want to report ${lostQty} x ${boxComp.name} as LOST from set ${name} (${serial})?`,
+        `Are you sure you want to report ${lostQty} x ${boxComp.name} as LOST from set ${name}?`,
       )
     )
       return;
@@ -867,23 +896,27 @@ function reportLostEquipment(e) {
     issueLogs.unshift({
       id: Date.now(),
       groupId: "LOST-ACC-" + Date.now(),
-      type: "LOST_PART",
-      itemType: "BOX_ITEM",
+      type: "LOST",
+      itemType: "BOX_ACCESSORY",
       issueDate: date,
       returnDate: "N/A",
       leader: person,
       receiver: person,
       returner: "N/A",
       mismatchReason: "",
-      projectId: "INCIDENT REPORT",
+      projectId: "SET ACCESSORY LOST",
       members: [],
-      name: `${name} -> [Lost ${boxComp.name}]`,
-      serial: serial,
-      boxItems: [{ name: boxComp.name, qty: lostQty }],
-      issueCondition: "LOST",
-      issueProblems: `Lost Accessory: ${boxComp.name} (x${lostQty}) | Incident: ${incident} | FIR: ${fir} | Action: ${recovery}`,
-      returnCondition: "LOST",
-      returnProblems: "ACCESSORY MISSING",
+      name: `${name} [Lost Box Part: ${boxComp.name} (x${lostQty})]`,
+      model: item.model || "N/A",
+      serial: item.serial || "N/A",
+      equipmentSerial: item.equipmentSerial || "N/A",
+      boxItems: [
+        { name: boxComp.name, qty: lostQty, originalQty: boxComp.originalQty },
+      ],
+      issueCondition: "PARTIAL SET LOST",
+      issueProblems: `Box Item (${boxComp.name} x${lostQty}) Lost | Incident: ${incident} | FIR: ${fir} | Action: ${recovery}`,
+      returnCondition: "INCOMPLETE SET",
+      returnProblems: `Set Accessory ${boxComp.name} missing`,
       remarks: incident,
       fineAmount: fineAmount,
       active: false,
@@ -894,11 +927,7 @@ function reportLostEquipment(e) {
       `✅ Lost accessory report submitted. ${lostQty} x ${boxComp.name} deducted from equipment set.`,
     );
   } else {
-    if (
-      !confirm(
-        `Are you sure you want to report entire ${name} (${serial}) as LOST?`,
-      )
-    )
+    if (!confirm(`Are you sure you want to report entire ${name} as LOST?`))
       return;
 
     if (item.type === "EQUIPMENT") {
@@ -922,12 +951,14 @@ function reportLostEquipment(e) {
       projectId: "LOST INCIDENT",
       members: [],
       name: name,
-      serial: serial,
+      model: item.model || "N/A",
+      serial: item.serial || "N/A",
+      equipmentSerial: item.equipmentSerial || "N/A",
       boxItems: item.boxItems ? JSON.parse(JSON.stringify(item.boxItems)) : [],
       issueCondition: "LOST",
-      issueProblems: `Incident: ${incident} | FIR: ${fir} | Action: ${recovery}`,
+      issueProblems: `FULL ITEM LOST | Incident: ${incident} | FIR: ${fir} | Recovery: ${recovery}`,
       returnCondition: "LOST",
-      returnProblems: "ITEM MISSING",
+      returnProblems: "ITEM MISSING FROM STOCK",
       remarks: incident,
       fineAmount: fineAmount,
       active: false,
@@ -954,7 +985,13 @@ function openReturnModal(logId) {
 
   document.getElementById("modal_log_id").value = log.id;
   document.getElementById("modal_eq_name").innerText = log.name;
-  document.getElementById("modal_eq_serial").innerText = log.serial;
+
+  const modelStr =
+    log.model && log.model !== "N/A" ? `Model: ${log.model} | ` : "";
+  const serialsStr = formatSerialText(log.serial, log.equipmentSerial);
+  document.getElementById("modal_eq_serial").innerText =
+    `${modelStr}${serialsStr}`;
+
   document.getElementById("modal_project_id").innerText =
     log.projectId || "N/A";
   document.getElementById("modal_issue_receiver").innerText = originalReceiver;
@@ -977,16 +1014,53 @@ function openReturnModal(logId) {
     }
   }
 
+  document.getElementById("r_is_lost").value = "NO";
   document.getElementById("r_date").valueAsDate = new Date();
   document.getElementById("r_returner").value = originalReceiver;
   document.getElementById("r_condition").value = log.issueCondition;
   document.getElementById("r_problems").value =
     log.issueProblems !== "No reported issues" ? log.issueProblems : "";
+  document.getElementById("r_fine_amount").value = "";
 
+  toggleReturnLostFields();
   checkPersonMismatch();
 
   returnModalObj = new bootstrap.Modal(document.getElementById("returnModal"));
   returnModalObj.show();
+}
+
+function toggleReturnLostFields() {
+  const isLost = document.getElementById("r_is_lost").value;
+  const divCond = document.getElementById("div_r_cond");
+  const divProb = document.getElementById("div_r_prob");
+  const divFine = document.getElementById("div_r_fine");
+  const lblReturner = document.getElementById("lbl_returner");
+  const btnSubmit = document.getElementById("btn_return_submit");
+
+  if (isLost === "YES") {
+    divCond.classList.add("d-none");
+    divFine.classList.remove("d-none");
+    lblReturner.innerText = "Person Held Responsible / Reported By";
+    divProb.querySelector("label").innerText =
+      "Explain Incident / How it was lost in site";
+    document.getElementById("r_problems").placeholder =
+      "e.g. Lost in river survey / Stolen from site...";
+    btnSubmit.className =
+      "w-full py-3 bg-status-alert text-white rounded-xl text-sm font-bold hover:opacity-95 transition-all flex items-center justify-center gap-2 shadow-sm";
+    btnSubmit.innerHTML =
+      '<span class="material-symbols-outlined text-lg">warning</span> Confirm Item Lost at Site';
+  } else {
+    divCond.classList.remove("d-none");
+    divFine.classList.add("d-none");
+    lblReturner.innerText = "Person Returning Item";
+    divProb.querySelector("label").innerText = "Updated Defect Details";
+    document.getElementById("r_problems").placeholder =
+      "Any new defects details...";
+    btnSubmit.className =
+      "w-full py-3 bg-status-success text-white rounded-xl text-sm font-bold hover:opacity-95 transition-all flex items-center justify-center gap-2 shadow-sm";
+    btnSubmit.innerHTML =
+      '<span class="material-symbols-outlined text-lg">published_with_changes</span> Confirm Single Item Return';
+  }
 }
 
 function checkPersonMismatch() {
@@ -1005,17 +1079,56 @@ function checkPersonMismatch() {
 function submitReturn(e) {
   e.preventDefault();
   const logId = parseInt(document.getElementById("modal_log_id").value);
+  const isLost = document.getElementById("r_is_lost").value;
   const returnDate = document.getElementById("r_date").value;
   const returner = document.getElementById("r_returner").value.trim();
-  const returnCond = document.getElementById("r_condition").value;
-  const returnProbs =
-    document.getElementById("r_problems").value.trim() || "No reported issues";
   const mismatchReason = document
     .getElementById("r_mismatch_reason")
     .value.trim();
 
   const log = issueLogs.find((l) => l.id === logId);
-  if (log) {
+  if (!log) return;
+
+  if (isLost === "YES") {
+    const lostDetails =
+      document.getElementById("r_problems").value.trim() ||
+      "Lost at site during work";
+    const fineAmt =
+      document.getElementById("r_fine_amount").value.trim() || "N/A";
+
+    log.active = false;
+    log.type = "LOST";
+    log.returnDate = returnDate;
+    log.returner = returner;
+    log.returnCondition = "LOST AT SITE";
+    log.returnProblems = `LOST AT SITE | Details: ${lostDetails}`;
+    log.mismatchReason = mismatchReason;
+    log.fineAmount = fineAmt;
+    log.exported = false;
+
+    const invIndex = inventory.findIndex(
+      (i) =>
+        (i.serial && i.serial !== "N/A" && i.serial === log.serial) ||
+        (i.type === "ACCESSORY" && i.name === log.name),
+    );
+    if (invIndex !== -1) {
+      const item = inventory[invIndex];
+      if (item.type === "EQUIPMENT") {
+        inventory.splice(invIndex, 1);
+      } else {
+        item.quantity = Math.max(0, item.quantity - 1);
+      }
+    }
+
+    alert(
+      "⚠️ Equipment recorded as LOST AT SITE! Master inventory updated and moved to incident history.",
+    );
+  } else {
+    const returnCond = document.getElementById("r_condition").value;
+    const returnProbs =
+      document.getElementById("r_problems").value.trim() ||
+      "No reported issues";
+
     log.active = false;
     log.returnDate = returnDate;
     log.returner = returner;
@@ -1025,7 +1138,11 @@ function submitReturn(e) {
     log.exported = false;
 
     if (log.itemType === "EQUIPMENT") {
-      const item = inventory.find((i) => i.serial === log.serial);
+      const item = inventory.find(
+        (i) =>
+          (i.serial && i.serial !== "N/A" && i.serial === log.serial) ||
+          i.name === log.name,
+      );
       if (item) {
         item.isIssued = false;
         item.condition = returnCond;
@@ -1045,7 +1162,9 @@ function submitReturn(e) {
           id: Date.now(),
           type: "ACCESSORY",
           name: log.name,
+          model: "N/A",
           serial: "N/A",
+          equipmentSerial: "N/A",
           quantity: qtyToReturn,
           condition: returnCond,
           problems: returnProbs,
@@ -1055,11 +1174,11 @@ function submitReturn(e) {
         });
       }
     }
+    alert("Item successfully returned to stock!");
   }
 
   returnModalObj.hide();
   saveData();
-  alert("Item successfully returned to stock!");
 }
 
 // --- DROPDOWNS ---
@@ -1221,9 +1340,18 @@ function renderMasterTable() {
         boxChips = `<div class="mt-1">${item.boxItems.map((b) => `<span class="box-item-chip"><i class="bi bi-box me-1"></i>${b.name} (${b.qty})</span>`).join("")}</div>`;
       }
 
+      const serialsStr = formatSerialText(item.serial, item.equipmentSerial);
+      const modelStr =
+        item.model && item.model !== "N/A"
+          ? `<div class="small text-muted">Model: <b>${item.model}</b></div>`
+          : "";
+
       tbody.innerHTML += `
                 <tr>
-                    <td class="fw-bold text-primary">${item.serial}</td>
+                    <td>
+                        <span class="fw-bold text-primary font-mono-data">${serialsStr}</span>
+                        ${modelStr}
+                    </td>
                     <td>
                         <div class="fw-bold">${item.name}</div>
                         ${setIntegrityBadge}
@@ -1272,7 +1400,9 @@ function renderLogs() {
       (l.receiver && l.receiver.toLowerCase().includes(query)) ||
       (l.returner && l.returner.toLowerCase().includes(query)) ||
       l.name.toLowerCase().includes(query) ||
-      l.serial.toLowerCase().includes(query) ||
+      (l.model && l.model.toLowerCase().includes(query)) ||
+      (l.serial && l.serial.toLowerCase().includes(query)) ||
+      (l.equipmentSerial && l.equipmentSerial.toLowerCase().includes(query)) ||
       (l.projectId && l.projectId.toLowerCase().includes(query)),
   );
 
@@ -1309,6 +1439,12 @@ function renderLogs() {
         boxChips = `<div class="mt-1">${log.boxItems.map((b) => `<span class="box-item-chip"><i class="bi bi-box me-1"></i>${b.name} (x${b.qty})</span>`).join("")}</div>`;
       }
 
+      const serialsStr = formatSerialText(log.serial, log.equipmentSerial);
+      const modelStr =
+        log.model && log.model !== "N/A"
+          ? `<div class="small text-muted">Model: <b>${log.model}</b></div>`
+          : "";
+
       pendingTbody.innerHTML += `
                 <tr class="table-warning bg-opacity-10">
                     <td><small class="fw-bold">${log.issueDate}</small></td>
@@ -1320,7 +1456,8 @@ function renderLogs() {
                     </td>
                     <td>
                         <div class="fw-bold">${log.name}</div>
-                        <small class="text-muted">Ref/Serial: <b>${log.serial}</b></small>
+                        ${modelStr}
+                        <small class="text-muted">Serials: <b>${serialsStr}</b></small>
                         ${boxChips}
                     </td>
                     <td>
@@ -1341,15 +1478,25 @@ function renderLogs() {
       '<tr><td colspan="6" class="text-center text-muted py-3">No returned or incident history logs found.</td></tr>';
   } else {
     historyLogs.forEach((log) => {
+      const serialsStr = formatSerialText(log.serial, log.equipmentSerial);
+      const modelStr =
+        log.model && log.model !== "N/A"
+          ? `<div class="small text-muted">Model: <b>${log.model}</b></div>`
+          : "";
+
       if (log.type === "LOST") {
         returnedTbody.innerHTML += `
                     <tr class="table-danger">
                         <td><span class="badge badge-lost mb-1">LOST REPORT</span><br><small class="fw-bold">${log.issueDate}</small></td>
                         <td><span class="badge bg-danger">MISSING</span></td>
-                        <td><div class="fw-bold">${log.leader}</div><small class="text-muted">In-Charge</small></td>
-                        <td><div class="fw-bold text-danger">${log.name}</div><small>Ref: <b>${log.serial}</b></small></td>
+                        <td><div class="fw-bold">${log.leader}</div><small class="text-muted">In-Charge / Receiver: <b>${log.receiver || log.leader}</b></small></td>
                         <td>
-                            <small class="d-block">${log.issueProblems}</small>
+                          <div class="fw-bold text-danger">${log.name}</div>
+                          ${modelStr}
+                          <small>Serials: <b>${serialsStr}</b></small>
+                        </td>
+                        <td>
+                            <small class="d-block">${log.issueProblems || log.returnProblems}</small>
                             <span class="badge bg-warning text-dark mt-1">Fine/Comp: ${log.fineAmount || "N/A"}</span>
                         </td>
                         <td><span class="badge bg-dark"><i class="bi bi-x-circle me-1"></i> Removed From Stock</span></td>
@@ -1392,7 +1539,8 @@ function renderLogs() {
                     </td>
                     <td>
                         <div class="fw-bold">${log.name}</div>
-                        <small class="text-muted">Ref/Serial: <b>${log.serial}</b></small>
+                        ${modelStr}
+                        <small class="text-muted">Serials: <b>${serialsStr}</b></small>
                         ${boxChips}
                     </td>
                     <td>
@@ -1487,7 +1635,7 @@ function processExport(e) {
   csv += `--------------------------------------------------------------------------------------------------------\n`;
   csv += `PART 1: MASTER STOCK INVENTORY & SET INTEGRITY\n`;
   csv += `--------------------------------------------------------------------------------------------------------\n`;
-  csv += `"ITEM TYPE","SERIAL / ID","ITEM NAME","SET INTEGRITY STATUS","BOX ACCESSORIES (CURRENT SET)","QUANTITY","INITIAL CONDITION","PROBLEM DETAILS","CURRENT STATUS"\n`;
+  csv += `"ITEM TYPE","MODEL NUMBER","OFFICE SERIAL","EQUIPMENT SERIAL","ITEM NAME","SET INTEGRITY STATUS","BOX ACCESSORIES (CURRENT SET)","QUANTITY","INITIAL CONDITION","PROBLEM DETAILS","CURRENT STATUS"\n`;
 
   if (inventoryToExport.length === 0) {
     csv += `"No inventory items recorded."\n`;
@@ -1507,7 +1655,7 @@ function processExport(e) {
       const boxStr = i.boxItems
         ? i.boxItems.map((b) => `${b.name}(x${b.qty})`).join("; ")
         : "None";
-      csv += `"${i.type}","${i.serial}","${i.name}","${missingMsg}","${boxStr}","${i.quantity}","${i.condition}","${i.problems || "None"}","${i.isIssued ? "ISSUED" : "AVAILABLE"}"\n`;
+      csv += `"${i.type}","${i.model || "N/A"}","${i.serial || "N/A"}","${i.equipmentSerial || "N/A"}","${i.name}","${missingMsg}","${boxStr}","${i.quantity}","${i.condition}","${i.problems || "None"}","${i.isIssued ? "ISSUED" : "AVAILABLE"}"\n`;
       i.exported = true;
     });
   }
@@ -1532,7 +1680,7 @@ function processExport(e) {
   csv += `--------------------------------------------------------------------------------------------------------\n`;
   csv += `PART 2.1: RETURN PENDING / CURRENTLY ISSUED ITEMS\n`;
   csv += `--------------------------------------------------------------------------------------------------------\n`;
-  csv += `"ISSUE GROUP ID","ISSUE DATE","PROJECT ID","TEAM LEADER","RECEIVER PERSON","TEAM MEMBERS","ITEM NAME","SERIAL / REF","INCLUDED BOX ACCESSORIES","ISSUE CONDITION","ISSUE PROBLEMS","REMARKS"\n`;
+  csv += `"ISSUE GROUP ID","ISSUE DATE","PROJECT ID","TEAM LEADER","RECEIVER PERSON","TEAM MEMBERS","ITEM NAME","MODEL NUMBER","OFFICE SERIAL","EQUIPMENT SERIAL","INCLUDED BOX ACCESSORIES","ISSUE CONDITION","ISSUE PROBLEMS","REMARKS"\n`;
 
   if (pendingLogsToExport.length === 0) {
     csv += `"No pending issued items."\n`;
@@ -1542,7 +1690,7 @@ function processExport(e) {
       const boxStr = l.boxItems
         ? l.boxItems.map((b) => `${b.name}(x${b.qty})`).join("; ")
         : "None";
-      csv += `"${l.groupId || "N/A"}","${l.issueDate}","${l.projectId || "N/A"}","${l.leader}","${l.receiver || ""}","${membersStr}","${l.name}","${l.serial}","${boxStr}","${l.issueCondition}","${l.issueProblems || "None"}","${l.remarks || ""}"\n`;
+      csv += `"${l.groupId || "N/A"}","${l.issueDate}","${l.projectId || "N/A"}","${l.leader}","${l.receiver || ""}","${membersStr}","${l.name}","${l.model || "N/A"}","${l.serial || "N/A"}","${l.equipmentSerial || "N/A"}","${boxStr}","${l.issueCondition}","${l.issueProblems || "None"}","${l.remarks || ""}"\n`;
       l.exported = true;
     });
   }
@@ -1553,7 +1701,7 @@ function processExport(e) {
   csv += `--------------------------------------------------------------------------------------------------------\n`;
   csv += `PART 2.2: RETURNED & INCIDENT HISTORY LOGS\n`;
   csv += `--------------------------------------------------------------------------------------------------------\n`;
-  csv += `"ISSUE GROUP ID","LOG TYPE","ISSUE DATE","RETURN DATE","PROJECT ID","TEAM LEADER","RECEIVER PERSON","RETURNED BY","MISMATCH REASON","TEAM MEMBERS","ITEM NAME","SERIAL / REF","INCLUDED BOX ACCESSORIES","RETURN CONDITION","RETURN PROBLEMS / INCIDENT DETAILS","FINE / COMP AMOUNT","REMARKS"\n`;
+  csv += `"ISSUE GROUP ID","LOG TYPE","ISSUE DATE","RETURN DATE","PROJECT ID","TEAM LEADER","RECEIVER PERSON","RETURNED BY","MISMATCH REASON","TEAM MEMBERS","ITEM NAME","MODEL NUMBER","OFFICE SERIAL","EQUIPMENT SERIAL","INCLUDED BOX ACCESSORIES","RETURN CONDITION","RETURN PROBLEMS / INCIDENT DETAILS","FINE / COMP AMOUNT","REMARKS"\n`;
 
   if (historyLogsToExport.length === 0) {
     csv += `"No returned or incident history logs recorded."\n`;
@@ -1563,7 +1711,7 @@ function processExport(e) {
       const boxStr = l.boxItems
         ? l.boxItems.map((b) => `${b.name}(x${b.qty})`).join("; ")
         : "None";
-      csv += `"${l.groupId || "N/A"}","${l.type || "ISSUE"}","${l.issueDate}","${l.returnDate || "N/A"}","${l.projectId || "N/A"}","${l.leader}","${l.receiver || ""}","${l.returner || ""}","${l.mismatchReason || "N/A"}","${membersStr}","${l.name}","${l.serial}","${boxStr}","${l.returnCondition || "N/A"}","${l.returnProblems || l.issueProblems || "N/A"}","${l.fineAmount || "N/A"}","${l.remarks || ""}"\n`;
+      csv += `"${l.groupId || "N/A"}","${l.type || "ISSUE"}","${l.issueDate}","${l.returnDate || "N/A"}","${l.projectId || "N/A"}","${l.leader}","${l.receiver || ""}","${l.returner || ""}","${l.mismatchReason || "N/A"}","${membersStr}","${l.name}","${l.model || "N/A"}","${l.serial || "N/A"}","${l.equipmentSerial || "N/A"}","${boxStr}","${l.returnCondition || "N/A"}","${l.returnProblems || l.issueProblems || "N/A"}","${l.fineAmount || "N/A"}","${l.remarks || ""}"\n`;
       l.exported = true;
     });
   }
@@ -1762,84 +1910,4 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-// --- COMPANY ACCESS SECURITY & OPERATOR SESSION MANAGEMENT ---
-const DEFAULT_COMPANY_PIN = "1234";
-
-function getCompanyPIN() {
-  return localStorage.getItem("eq_company_pin") || DEFAULT_COMPANY_PIN;
-}
-
-function updateCompanyPINFromUI() {
-  const pinInput = document.getElementById("cfg_company_pin");
-  if (!pinInput || !pinInput.value.trim()) {
-    alert("Please enter a valid 4-8 digit Company Security PIN.");
-    return;
-  }
-  const newPin = pinInput.value.trim();
-  if (newPin.length < 4) {
-    alert("PIN must be at least 4 digits/characters.");
-    return;
-  }
-  localStorage.setItem("eq_company_pin", newPin);
-  alert(`✅ Company Security PIN updated successfully! New PIN is: ${newPin}`);
-  pinInput.value = "";
-}
-
-function getCurrentOperator() {
-  return sessionStorage.getItem("eq_current_operator") || "Authorized Staff";
-}
-
-function checkSessionAuth() {
-  const isAuth = sessionStorage.getItem("eq_company_authenticated") === "true";
-  const lockScreen = document.getElementById("authLockScreen");
-  const operatorBadge = document.getElementById("activeOperatorName");
-
-  if (operatorBadge) {
-    operatorBadge.textContent = getCurrentOperator();
-  }
-
-  if (lockScreen) {
-    if (isAuth) {
-      lockScreen.classList.add("hidden");
-    } else {
-      lockScreen.classList.remove("hidden");
-    }
-  }
-}
-
-function authenticateSession(e) {
-  e.preventDefault();
-  const nameInput = document.getElementById("auth_operator_name");
-  const pinInput = document.getElementById("auth_security_pin");
-  const errorMsg = document.getElementById("authErrorMsg");
-
-  if (!nameInput || !pinInput) return;
-
-  const operatorName = nameInput.value.trim();
-  const enteredPin = pinInput.value.trim();
-  const validPin = getCompanyPIN();
-
-  if (enteredPin === validPin) {
-    sessionStorage.setItem("eq_company_authenticated", "true");
-    sessionStorage.setItem("eq_current_operator", operatorName);
-    if (errorMsg) errorMsg.classList.add("hidden");
-    checkSessionAuth();
-    pinInput.value = "";
-  } else {
-    if (errorMsg) {
-      errorMsg.classList.remove("hidden");
-      errorMsg.textContent = "❌ Incorrect Security PIN! Default PIN is 1234";
-    }
-  }
-}
-
-function lockAppSession() {
-  sessionStorage.removeItem("eq_company_authenticated");
-  checkSessionAuth();
-}
-
-// Auto-check authentication status on load
-document.addEventListener("DOMContentLoaded", () => {
-  checkSessionAuth();
-});
-checkSessionAuth();
+// Removed COMPANY ACCESS SECURITY & OPERATOR SESSION MANAGEMENT as requested by the user.
