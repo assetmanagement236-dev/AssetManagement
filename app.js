@@ -1912,12 +1912,12 @@ function installPWA() {
     });
   } else {
     alert(
-      "📱 To install this App on your Android/iOS phone:\n\n1. Open this website in Chrome / Safari\n2. Tap the browser Menu (3 dots or share button)\n3. Select 'Add to Home Screen' or 'Install App'",
+      "Your browser either does not support web app installation, or you have already installed it.",
     );
   }
 }
 
-// Register Service Worker for PWA Offline & Installable Web App
+// Ensure Service Worker is registered (Mandatory for PWA installation prompts)
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker
