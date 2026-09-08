@@ -1,0 +1,2137 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equipment & Asset Management System</title>
+    
+    <!-- PWA Web App Manifest -->
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Asset Management App","short_name":"AssetApp","start_url":".","display":"standalone","background_color":"#f8fafc","theme_color":"#0f172a","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2554/2554936.png","sizes":"512x512","type":"image/png"}]}'>
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2554/2554936.png">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #0f172a;
+            --secondary-color: #334155;
+            --accent-color: #0284c7;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --success-color: #10b981;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+        }
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: #334155;
+        }
+        .navbar-custom {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+            margin-bottom: 24px;
+            background: var(--card-bg);
+            transition: all 0.2s ease;
+        }
+        .card-header {
+            background-color: #ffffff;
+            border-bottom: 1.5px solid #f1f5f9;
+            font-weight: 700;
+            color: var(--primary-color);
+            padding: 16px 20px;
+            border-radius: 12px 12px 0 0 !important;
+        }
+        .table-custom th {
+            background-color: #f1f5f9;
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-available { background-color: #dcfce7; color: #15803d; }
+        .badge-issued { background-color: #e0f2fe; color: #0369a1; }
+        .badge-lost { background-color: #fee2e2; color: #b91c1c; }
+        .badge-accessory { background-color: #fef3c7; color: #b45309; }
+        .badge-incomplete { background-color: #fee2e2; color: #991b1b; font-weight: bold; }
+        .team-member-chip {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            margin-right: 4px;
+            margin-bottom: 4px;
+        }
+        .box-item-chip {
+            display: inline-block;
+            background: #f1f5f9;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+            padding: 2px 7px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            margin-right: 4px;
+            margin-bottom: 4px;
+        }
+        .borrowed-chip {
+            display: inline-block;
+            background: #fffbeb;
+            color: #b45309;
+            border: 1px solid #fde68a;
+            padding: 2px 7px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            margin-right: 4px;
+            margin-bottom: 4px;
+        }
+        .condition-badge {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .cond-good { background: #dcfce7; color: #15803d; }
+        .cond-minor { background: #fef9c3; color: #854d0e; }
+        .cond-damaged { background: #fee2e2; color: #b91c1c; }
+        .btn-custom-primary {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            font-weight: 500;
+        }
+        .btn-custom-primary:hover {
+            background-color: #0369a1;
+            color: white;
+        }
+        .nav-tabs .nav-link {
+            color: #64748b;
+            font-weight: 600;
+            border: none;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-tabs .nav-link.active {
+            color: var(--accent-color);
+            border-bottom: 2px solid var(--accent-color);
+            background: transparent;
+        }
+        .suggestion-box {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 1050;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+        .suggestion-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .suggestion-item:hover {
+            background-color: #f1f5f9;
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+        .item-selection-container {
+            max-height: 280px;
+            overflow-y: auto;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 12px;
+            background-color: #f8fafc;
+        }
+        .box-input-group {
+            background-color: #ffffff;
+            border: 1px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .transfer-box-card {
+            background: #fff8f1;
+            border: 1px solid #ffedd5;
+        }
+    </style>
+</head>
+<body class="pb-5">
+
+    <!-- Header / Navbar -->
+    <nav class="navbar navbar-custom py-3 mb-4">
+        <div class="container-fluid px-4">
+            <span class="navbar-brand mb-0 h1 text-white fw-bold d-flex align-items-center">
+                <i class="bi bi-shield-check me-2 fs-3 text-info"></i> Equipment & Asset Management System
+            </span>
+            <div class="d-flex align-items-center gap-2">
+                <button id="pwaInstallBtn" class="btn btn-warning btn-sm d-none" onclick="installPWA()"><i class="bi bi-download me-1"></i> Install App</button>
+                <button class="btn btn-outline-light btn-sm" onclick="openExportModal()"><i class="bi bi-file-earmark-spreadsheet me-1"></i> Export Daily CSV Backup</button>
+                <button class="btn btn-outline-warning btn-sm" onclick="triggerResetWorkflow()"><i class="bi bi-arrow-counterclockwise me-1"></i> Reset Movement Logs</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4">
+        <div class="row">
+            
+            <!-- LEFT PANEL: Master Inventory & Stock Status -->
+            <div class="col-lg-5">
+                
+                <!-- Master Entry Form -->
+                <div class="card">
+                    <div class="card-header"><i class="bi bi-plus-circle me-2 text-primary"></i>1. Add New Master Equipment / Accessory</div>
+                    <div class="card-body">
+                        <form id="masterForm" onsubmit="addMasterItem(event)">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Item Category / Type</label>
+                                <select id="m_type" class="form-select" onchange="toggleItemTypeFields()" required>
+                                    <option value="EQUIPMENT">Main Equipment (With Serial No.)</option>
+                                    <option value="ACCESSORY">Loose Accessory / Consumable (Quantity Only)</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3 position-relative">
+                                <label class="form-label fw-semibold">Item Name</label>
+                                <div class="input-group">
+                                    <input type="text" id="m_name" class="form-control" placeholder="Type or search item name..." autocomplete="off" onkeyup="filterSuggestions()" onfocus="filterSuggestions()" required>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="openManageSuggestionsModal()" title="Manage Saved Suggestions">
+                                        <i class="bi bi-gear-fill text-dark"></i>
+                                    </button>
+                                </div>
+                                <div id="custom_suggestion_box" class="suggestion-box d-none"></div>
+                                <small class="text-muted" style="font-size: 0.72rem;">* গিয়ার আইকনে ক্লিক করে সাজেস্টেড নাম ম্যানেজ করা যাবে</small>
+                            </div>
+
+                            <!-- EQUIPMENT FIELDS -->
+                            <div id="equipment_fields">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Office Serial Number</label>
+                                    <input type="text" id="m_serial" class="form-control" placeholder="e.g. TS-101, LP-202">
+                                    <small class="text-muted" style="font-size: 0.75rem;">* সিরিয়াল নম্বর ইউনিক হতে হবে</small>
+                                </div>
+                                
+                                <!-- BOX ACCESSORIES INCLUSION (SET) -->
+                                <div class="mb-3 box-input-group">
+                                    <label class="form-label fw-semibold text-primary d-flex align-items-center">
+                                        <i class="bi bi-box-seam me-1"></i> Equipment Box Items / Set Components
+                                    </label>
+                                    <small class="text-muted d-block mb-2" style="font-size: 0.75rem;">ইক্যুইপমেন্ট বক্সের ভেতরে থাকা আনুষঙ্গিক জিনিসের নাম ও সংখ্যা এন্ট্রি করুন (যেমন: Battery, Cable, Charger)</small>
+                                    
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-7">
+                                            <input type="text" id="box_item_name" class="form-control form-control-sm" placeholder="Box Item (e.g. Battery)">
+                                        </div>
+                                        <div class="col-3">
+                                            <input type="number" id="box_item_qty" class="form-control form-control-sm" min="1" value="1" placeholder="Qty">
+                                        </div>
+                                        <div class="col-2">
+                                            <button class="btn btn-sm btn-outline-primary w-100" type="button" onclick="addBoxItem()"><i class="bi bi-plus"></i></button>
+                                        </div>
+                                    </div>
+                                    <div id="box_items_container" class="mt-2">
+                                        <small class="text-muted" id="empty_box_text">No box items added to set yet.</small>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Initial Equipment Condition</label>
+                                    <select id="m_condition" class="form-select">
+                                        <option value="Good">Good (Working fine)</option>
+                                        <option value="Minor Fault">Minor Fault (Has minor issues)</option>
+                                        <option value="Damaged">Damaged / Needs Repair</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Problem / Condition Details (If any)</label>
+                                    <textarea id="m_problems" class="form-control" rows="2" placeholder="Describe any existing defects..."></textarea>
+                                </div>
+                            </div>
+
+                            <!-- ACCESSORY FIELDS -->
+                            <div id="accessory_fields" class="d-none">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Total Quantity (সংখ্যা)</label>
+                                    <input type="number" id="m_qty" class="form-control" min="1" placeholder="e.g. 5, 10, 50">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-custom-primary w-100"><i class="bi bi-node-plus me-1"></i> Add to Master Inventory</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Live Stock Summary -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-pie-chart me-2 text-success"></i>Stock Summary (Auto Calculated)</span>
+                        <span class="badge bg-secondary" id="totalEquipmentTypes">0 Types</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-custom table-hover align-middle mb-0" id="summaryTable">
+                                <thead>
+                                    <tr>
+                                        <th>Item Name</th>
+                                        <th class="text-center">Total Quantity</th>
+                                        <th class="text-center">Available Stock</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Master Stock Table -->
+                <div class="card">
+                    <div class="card-header"><i class="bi bi-list-stars me-2 text-info"></i>Part 1: Master Stock Inventory & Box Set Integrity</div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+                            <table class="table table-custom table-hover align-middle mb-0" id="masterTable">
+                                <thead>
+                                    <tr>
+                                        <th>Type / Serial</th>
+                                        <th>Item Name & Box Set Integrity</th>
+                                        <th>Condition / Details</th>
+                                        <th>Status / Qty</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT PANEL: Allocation, Issue, Borrow/Transfer, Lost Tracking & Logs -->
+            <div class="col-lg-7">
+                
+                <!-- Nav Tabs for Operations -->
+                <ul class="nav nav-tabs mb-3" id="opTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="issue-tab" data-bs-toggle="tab" data-bs-target="#issue-panel" type="button"><i class="bi bi-send me-2"></i>2. Issue Multiple Equipment</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link text-warning" id="transfer-tab" data-bs-toggle="tab" data-bs-target="#transfer-panel" type="button"><i class="bi bi-arrow-left-right me-2"></i>3. Borrow / Inter-Set Accessories</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link text-danger" id="lost-tab" data-bs-toggle="tab" data-bs-target="#lost-panel" type="button"><i class="bi bi-exclamation-triangle me-2"></i>4. Report Lost Item</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="opTabContent">
+                    
+                    <!-- TAB 1: Multi-Item Issue Form -->
+                    <div class="tab-pane fade show active" id="issue-panel" role="tabpanel">
+                        <div class="card">
+                            <div class="card-header"><i class="bi bi-send me-2 text-primary"></i>Issue Equipment to Field Team</div>
+                            <div class="card-body">
+                                <form id="issueForm" onsubmit="issueEquipment(event)">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Issue Date</label>
+                                            <input type="date" id="i_date" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Team Leader / Issuer</label>
+                                            <input type="text" id="i_leader" class="form-control" placeholder="Leader Full Name" required>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Equipment Receiver Person</label>
+                                            <input type="text" id="i_receiver" class="form-control" placeholder="Person receiving equipment" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Project ID / Location</label>
+                                            <input type="text" id="i_project_id" class="form-control" placeholder="e.g. PRJ-2026-01 (Site Loc)" required>
+                                        </div>
+                                        
+                                        <!-- Multiple Team Members Section -->
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold">Team Members / Assistants (Multiple)</label>
+                                            <div class="input-group mb-2">
+                                                <input type="text" id="member_input" class="form-control" placeholder="Enter member name and click Add">
+                                                <button class="btn btn-outline-secondary" type="button" onclick="addTeamMember()"><i class="bi bi-person-plus me-1"></i> Add Member</button>
+                                            </div>
+                                            <div id="team_members_container" class="p-2 border rounded bg-light min-height-50">
+                                                <small class="text-muted" id="empty_member_text">No additional members added yet.</small>
+                                            </div>
+                                        </div>
+
+                                        <!-- MULTI-ITEM SELECTION SECTION -->
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold text-primary">
+                                                <i class="bi bi-check2-square me-1"></i> Select Items & Quantities to Issue
+                                            </label>
+                                            <div class="item-selection-container" id="multi_item_container">
+                                                <!-- Dynamic Items Checkboxes & Quantity Input -->
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold">Remarks / Issue Purpose</label>
+                                            <input type="text" id="i_remarks" class="form-control" placeholder="Additional purpose or site notes...">
+                                        </div>
+
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-custom-primary w-100 py-2 fw-bold"><i class="bi bi-check-circle me-1"></i> Confirm & Issue Selected Items</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: Inter-Set Accessory Borrow / Transfer Form -->
+                    <div class="tab-pane fade" id="transfer-panel" role="tabpanel">
+                        <div class="card transfer-box-card">
+                            <div class="card-header bg-warning bg-opacity-20 text-dark">
+                                <i class="bi bi-arrow-left-right me-2 text-warning"></i>Borrow / Transfer Box Accessory to Another Set
+                            </div>
+                            <div class="card-body">
+                                <form id="transferForm" onsubmit="processBoxTransfer(event)">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Source Equipment Set (যে সেট থেকে মালামাল নেওয়া হবে)</label>
+                                            <select id="t_from_set" class="form-select" onchange="updateSourceBoxAccessoriesDropdown()" required>
+                                                <option value="">-- Select Source Set --</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Select Accessory to Borrow / Move</label>
+                                            <select id="t_accessory_item" class="form-select" required>
+                                                <option value="">-- Select Source Set First --</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Destination Equipment Set (যে সেটে নেওয়া হবে)</label>
+                                            <select id="t_to_set" class="form-select" required>
+                                                <option value="">-- Select Destination Set --</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Quantity to Move</label>
+                                            <input type="number" id="t_qty" class="form-control" min="1" value="1" required>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold">Reason for Inter-Set Borrowing</label>
+                                            <input type="text" id="t_reason" class="form-control" placeholder="e.g. Needed extra battery for Site-B testing..." required>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-warning w-100 py-2 fw-bold text-dark"><i class="bi bi-arrow-left-right me-1"></i> Confirm Accessory Transfer</button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                                <!-- Active Borrowed / Transferred Items Tracking List -->
+                                <div class="mt-4 border-top pt-3">
+                                    <h6 class="fw-bold text-dark"><i class="bi bi-list-nested me-1"></i> Currently Borrowed / Transferred Accessories</h6>
+                                    <div id="borrowed_list_container" class="mt-2"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: Report Lost Form (UPDATED WITH SET ACCESSORY OPTIONS) -->
+                    <div class="tab-pane fade" id="lost-panel" role="tabpanel">
+                        <div class="card border-danger">
+                            <div class="card-header bg-danger text-white"><i class="bi bi-exclamation-octagon me-2"></i>Report Lost / Missing Item</div>
+                            <div class="card-body">
+                                <form id="lostForm" onsubmit="reportLostEquipment(event)">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Date of Occurrence / Loss</label>
+                                            <input type="date" id="l_date" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Person Responsible / In-Charge</label>
+                                            <input type="text" id="l_person" class="form-control" placeholder="Name of person held responsible" required>
+                                        </div>
+
+                                        <!-- Loss Target Category Options -->
+                                        <div class="col-md-12">
+                                            <label class="form-label fw-semibold text-danger">Report Loss Type (কী হারিয়েছে তা সিলেক্ট করুন)</label>
+                                            <select id="l_target_type" class="form-select border-danger" onchange="toggleLostTypeFields()" required>
+                                                <option value="FULL_ITEM">1. Full Main Equipment / Loose Accessory Lost (সম্পূর্ণ ইক্যুইপমেন্ট হারিয়েছে)</option>
+                                                <option value="BOX_ITEM">2. Specific Box Accessory Lost from Set (বক্স সেট থেকে কোনো নির্দিষ্ট আনুষঙ্গিক পার্টস হারিয়েছে)</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Item Name</label>
+                                            <select id="l_name" class="form-select" onchange="updateLostSerialDropdown()" required>
+                                                <option value="">-- Select Item --</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Serial Number / Item Reference</label>
+                                            <select id="l_serial" class="form-select" onchange="updateLostBoxItemsDropdown()" required>
+                                                <option value="">-- Select Serial --</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Specific Box Accessory Field (Dynamic) -->
+                                        <div class="col-md-8 d-none" id="lost_box_item_div">
+                                            <label class="form-label fw-semibold text-primary">Select Lost Box Accessory / Component</label>
+                                            <select id="l_box_item" class="form-select">
+                                                <option value="">-- Select Serial / Equipment First --</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4 d-none" id="lost_box_qty_div">
+                                            <label class="form-label fw-semibold">Lost Quantity</label>
+                                            <input type="number" id="l_qty" class="form-control" min="1" value="1">
+                                        </div>
+
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold">How it was lost / Incident Details</label>
+                                            <textarea id="l_incident" class="form-control" rows="2" placeholder="Explain how, where, or under what circumstances it was lost..." required></textarea>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <label class="form-label fw-semibold">FIR / Police Incident Report No (If any)</label>
+                                            <input type="text" id="l_fir" class="form-control" placeholder="e.g. GD-102938 / N/A">
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Recovery / Action Status</label>
+                                            <select id="l_recovery" class="form-select" required>
+                                                <option value="Under Investigation">Under Investigation</option>
+                                                <option value="Pending Salary Deduction">Pending Salary Deduction</option>
+                                                <option value="Compensated / Fined">Compensated / Fined</option>
+                                                <option value="Written Off">Company Written Off</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Fine / Compensation Amount</label>
+                                            <input type="text" id="l_fine_amount" class="form-control" placeholder="e.g. 5000 Tk, $50 or N/A">
+                                        </div>
+
+                                        <div class="col-12">
+                                            <div class="alert alert-warning py-2 mb-0 small">
+                                                <i class="bi bi-exclamation-triangle-fill me-1"></i> <b>Warning:</b> Submitting this report will update stock status or reduce item quantity from the equipment set!
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-danger w-100 py-2"><i class="bi bi-trash3 me-1"></i> Submit Lost Report & Update Stock</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- PART 2 LOGS (SPLIT INTO TWO TABLES) -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold m-0 text-primary"><i class="bi bi-journal-text me-2"></i>Part 2: Movement Logs & History</h5>
+                    <input type="text" id="searchLog" class="form-control form-control-sm w-auto" placeholder="Search all logs..." onkeyup="renderLogs()">
+                </div>
+
+                <!-- 2.1: Currently Issued / Return Pending Items -->
+                <div class="card border-warning mb-4">
+                    <div class="card-header bg-warning bg-opacity-10 text-dark d-flex justify-content-between align-items-center">
+                        <span class="fw-bold text-dark"><i class="bi bi-hourglass-split me-2 text-warning"></i>2.1 Return Pending / Currently Issued Items</span>
+                        <span class="badge bg-warning text-dark" id="pendingCount">0 Pending</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-custom table-hover align-middle mb-0" id="pendingLogTable">
+                                <thead>
+                                    <tr>
+                                        <th>Issue Date</th>
+                                        <th>Project & Location</th>
+                                        <th>People Involved</th>
+                                        <th>Item & Box Components</th>
+                                        <th>Issue Condition</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.2: Already Returned & Incident History -->
+                <div class="card border-success">
+                    <div class="card-header bg-success bg-opacity-10 text-dark d-flex justify-content-between align-items-center">
+                        <span class="fw-bold text-dark"><i class="bi bi-check2-circle me-2 text-success"></i>2.2 Returned & Incident History Logs</span>
+                        <span class="badge bg-success" id="returnedCount">0 History Records</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-custom table-hover align-middle mb-0" id="returnedLogTable">
+                                <thead>
+                                    <tr>
+                                        <th>Dates / Type</th>
+                                        <th>Project</th>
+                                        <th>People Involved</th>
+                                        <th>Item & Box Components</th>
+                                        <th>Return Condition / Details</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MANAGE SUGGESTIONS MODAL -->
+    <div class="modal fade" id="manageSuggestionsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-secondary text-white py-2">
+                    <h6 class="modal-title fw-bold"><i class="bi bi-list-stars me-2"></i>Manage Item Name Suggestions</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="list-group list-group-flush" id="suggestionListContainer"></div>
+                </div>
+                <div class="modal-footer py-1">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RETURN SINGLE EQUIPMENT MODAL -->
+    <div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title fw-bold" id="returnModalLabel"><i class="bi bi-box-arrow-in-left me-2"></i>Return Single Item & Update Condition</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="returnForm" onsubmit="submitReturn(event)">
+                        <input type="hidden" id="modal_log_id">
+
+                        <div class="row g-3 mb-3 p-3 bg-light rounded border">
+                            <div class="col-md-6"><strong>Item Name:</strong> <span id="modal_eq_name" class="fw-bold"></span></div>
+                            <div class="col-md-6"><strong>Serial / Reference:</strong> <span id="modal_eq_serial" class="fw-bold text-primary"></span></div>
+                            <div class="col-md-12"><strong>Included Box Accessories (Set):</strong> <div id="modal_eq_box_items" class="mt-1"></div></div>
+                            <div class="col-md-6"><strong>Project/Location:</strong> <span id="modal_project_id"></span></div>
+                            <div class="col-md-6"><strong>Receiver (Original):</strong> <span id="modal_issue_receiver" class="fw-bold text-primary"></span></div>
+                            <div class="col-md-6"><strong>Issue Condition:</strong> <span id="modal_issue_cond" class="badge cond-good"></span></div>
+                            <div class="col-md-6"><strong>Issue Details:</strong> <span id="modal_issue_prob" class="text-muted small"></span></div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Return Date</label>
+                                <input type="date" id="r_date" class="form-control" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Person Returning Item</label>
+                                <input type="text" id="r_returner" class="form-control" placeholder="Name of person returning" onkeyup="checkPersonMismatch()" required>
+                            </div>
+
+                            <div class="col-12 d-none" id="mismatch_reason_div">
+                                <div class="p-2 bg-warning bg-opacity-10 border border-warning rounded">
+                                    <label class="form-label fw-semibold text-dark"><i class="bi bi-exclamation-triangle me-1 text-warning"></i> Reason for Person Change</label>
+                                    <input type="text" id="r_mismatch_reason" class="form-control" placeholder="Explain why a different person is returning this item...">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Current Condition Upon Return</label>
+                                <select id="r_condition" class="form-select" required>
+                                    <option value="Good">Good (Working fine)</option>
+                                    <option value="Minor Fault">Minor Fault (Needs minor repair)</option>
+                                    <option value="Damaged">Damaged / Broken</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Updated Problem / Defect Details</label>
+                                <input type="text" id="r_problems" class="form-control" placeholder="Any new defects or faults details...">
+                            </div>
+
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success w-100 py-2 fw-bold"><i class="bi bi-arrow-return-left me-1"></i> Confirm Single Item Return</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXPORT OPTIONS MODAL -->
+    <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold" id="exportModalLabel"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Export CSV Daily Backup</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="exportForm" onsubmit="processExport(event)">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Select Month & Year for Report</label>
+                            <input type="month" id="exp_month" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Download Mode / Data Scope</label>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="exportScope" id="scopeAll" value="ALL" checked>
+                                <label class="form-check-label" for="scopeAll">
+                                    <strong>All Records (আগের মাসের সকল হিসাব সহ)</strong>
+                                    <div class="text-muted small">ঐ মাসের পূর্বে এবং চলাকালীন সকল ঐতিহাসিক তথ্য সহ রিপোর্ট ডাউনলোড হবে।</div>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="exportScope" id="scopeNew" value="NEW">
+                                <label class="form-check-label" for="scopeNew">
+                                    <strong>Only New / Un-downloaded Items</strong>
+                                    <div class="text-muted small">আগে যেসব এন্ট্রি ডাউনলোড করা হয়নি শুধুমাত্র নতুনগুলো ডাউনলোড হবে।</div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold"><i class="bi bi-download me-1"></i> Download CSV Daily Backup</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap & Script -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // PWA Installation Handler
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const btn = document.getElementById('pwaInstallBtn');
+            if (btn) btn.classList.remove('d-none');
+        });
+
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        document.getElementById('pwaInstallBtn').classList.add('d-none');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        }
+
+        // Register Service Worker for Full Offline Cache
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                const CACHE_NAME = 'asset-app-v4';
+                self.addEventListener('install', (e) => {
+                    e.waitUntil(
+                        caches.open(CACHE_NAME).then((cache) => {
+                            return cache.addAll([
+                                'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
+                                'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css',
+                                'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'
+                            ]);
+                        })
+                    );
+                });
+                self.addEventListener('fetch', (e) => {
+                    e.respondWith(
+                        caches.match(e.request).then((res) => res || fetch(e.request))
+                    );
+                });
+            `;
+            const blob = new Blob([swCode], { type: 'application/javascript' });
+            navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
+        }
+
+        // Data Storage Architecture
+        let inventory = JSON.parse(localStorage.getItem('eq_v10_inventory')) || [];
+        let issueLogs = JSON.parse(localStorage.getItem('eq_v10_logs')) || [];
+        let borrowedTransfers = JSON.parse(localStorage.getItem('eq_v10_transfers')) || []; // Track inter-set transfers
+        let customSuggestions = JSON.parse(localStorage.getItem('eq_v10_custom_suggestions')) || [];
+        let currentTeamMembers = [];
+        let currentBoxItems = []; 
+        let pendingReset = false;
+        let exportModalObj, manageSuggestionsModalObj, returnModalObj;
+
+        // Set Default Dates
+        document.getElementById('i_date').valueAsDate = new Date();
+        document.getElementById('l_date').valueAsDate = new Date();
+        document.getElementById('r_date').valueAsDate = new Date();
+        
+        const today = new Date();
+        document.getElementById('exp_month').value = today.toISOString().slice(0, 7);
+
+        function saveData() {
+            localStorage.setItem('eq_v10_inventory', JSON.stringify(inventory));
+            localStorage.setItem('eq_v10_logs', JSON.stringify(issueLogs));
+            localStorage.setItem('eq_v10_transfers', JSON.stringify(borrowedTransfers));
+            localStorage.setItem('eq_v10_custom_suggestions', JSON.stringify(customSuggestions));
+            
+            localStorage.setItem('eq_v10_last_backup_time', new Date().toISOString());
+            renderAll();
+        }
+
+        function toggleItemTypeFields() {
+            const type = document.getElementById('m_type').value;
+            const eqFields = document.getElementById('equipment_fields');
+            const accFields = document.getElementById('accessory_fields');
+            const serialInput = document.getElementById('m_serial');
+            const qtyInput = document.getElementById('m_qty');
+
+            if (type === 'EQUIPMENT') {
+                eqFields.classList.remove('d-none');
+                accFields.classList.add('d-none');
+                serialInput.setAttribute('required', 'required');
+                qtyInput.removeAttribute('required');
+            } else {
+                eqFields.classList.add('d-none');
+                accFields.classList.remove('d-none');
+                serialInput.removeAttribute('required');
+                qtyInput.setAttribute('required', 'required');
+            }
+        }
+
+        // --- BOX ITEMS INCLUSION (SET) LOGIC ---
+        function addBoxItem() {
+            const nameInput = document.getElementById('box_item_name');
+            const qtyInput = document.getElementById('box_item_qty');
+            
+            const name = nameInput.value.trim();
+            const qty = parseInt(qtyInput.value) || 1;
+
+            if(name) {
+                currentBoxItems.push({ name: name, qty: qty, originalQty: qty });
+                nameInput.value = '';
+                qtyInput.value = '1';
+                renderBoxItemChips();
+            }
+        }
+
+        function removeBoxItem(index) {
+            currentBoxItems.splice(index, 1);
+            renderBoxItemChips();
+        }
+
+        function renderBoxItemChips() {
+            const container = document.getElementById('box_items_container');
+            if(currentBoxItems.length === 0) {
+                container.innerHTML = '<small class="text-muted" id="empty_box_text">No box items added to set yet.</small>';
+                return;
+            }
+            container.innerHTML = currentBoxItems.map((item, idx) => `
+                <span class="box-item-chip">
+                    <i class="bi bi-box me-1 text-primary"></i>${item.name} <b>(x${item.qty})</b>
+                    <i class="bi bi-x-circle-fill text-danger ms-1" style="cursor:pointer;" onclick="removeBoxItem(${idx})"></i>
+                </span>
+            `).join('');
+        }
+
+        // --- INTER-SET BORROW & TRANSFER SYSTEM ---
+        function updateTransferDropdowns() {
+            const fromSelect = document.getElementById('t_from_set');
+            const toSelect = document.getElementById('t_to_set');
+            
+            const mainEquipments = inventory.filter(i => i.type === 'EQUIPMENT');
+
+            fromSelect.innerHTML = '<option value="">-- Select Source Set --</option>';
+            toSelect.innerHTML = '<option value="">-- Select Destination Set --</option>';
+
+            mainEquipments.forEach(eq => {
+                const opt1 = document.createElement('option');
+                opt1.value = eq.id;
+                opt1.textContent = `${eq.name} (Serial: ${eq.serial})`;
+                fromSelect.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = eq.id;
+                opt2.textContent = `${eq.name} (Serial: ${eq.serial})`;
+                toSelect.appendChild(opt2);
+            });
+        }
+
+        function updateSourceBoxAccessoriesDropdown() {
+            const sourceId = parseInt(document.getElementById('t_from_set').value);
+            const accSelect = document.getElementById('t_accessory_item');
+            accSelect.innerHTML = '<option value="">-- Select Accessory Item --</option>';
+
+            const sourceEq = inventory.find(i => i.id === sourceId);
+            if(!sourceEq || !sourceEq.boxItems || sourceEq.boxItems.length === 0) {
+                accSelect.innerHTML = '<option value="">No box accessories in this set</option>';
+                return;
+            }
+
+            sourceEq.boxItems.forEach((b, idx) => {
+                if(b.qty > 0) {
+                    const opt = document.createElement('option');
+                    opt.value = idx;
+                    opt.textContent = `${b.name} (Available in set: ${b.qty})`;
+                    accSelect.appendChild(opt);
+                }
+            });
+        }
+
+        function processBoxTransfer(e) {
+            e.preventDefault();
+            const sourceId = parseInt(document.getElementById('t_from_set').value);
+            const destId = parseInt(document.getElementById('t_to_set').value);
+            const accIndex = parseInt(document.getElementById('t_accessory_item').value);
+            const moveQty = parseInt(document.getElementById('t_qty').value) || 1;
+            const reason = document.getElementById('t_reason').value.trim();
+
+            if(sourceId === destId) {
+                alert("⚠️ Source and Destination Sets cannot be the same!");
+                return;
+            }
+
+            const sourceEq = inventory.find(i => i.id === sourceId);
+            const destEq = inventory.find(i => i.id === destId);
+
+            if(!sourceEq || !destEq) return;
+
+            const boxItem = sourceEq.boxItems[accIndex];
+            if(!boxItem || boxItem.qty < moveQty) {
+                alert(`⚠️ Cannot borrow ${moveQty}. Only ${boxItem ? boxItem.qty : 0} available in source set!`);
+                return;
+            }
+
+            // Deduct from Source Box Set
+            boxItem.qty -= moveQty;
+
+            // Add or increment in Destination Box Set as Borrowed
+            if(!destEq.boxItems) destEq.boxItems = [];
+            let destBoxItem = destEq.boxItems.find(b => b.name.toLowerCase() === boxItem.name.toLowerCase());
+            if(destBoxItem) {
+                destBoxItem.qty += moveQty;
+            } else {
+                destEq.boxItems.push({ name: boxItem.name, qty: moveQty, originalQty: 0 });
+            }
+
+            // Log the transfer
+            borrowedTransfers.unshift({
+                id: Date.now(),
+                sourceEqId: sourceEq.id,
+                sourceSerial: sourceEq.serial,
+                sourceName: sourceEq.name,
+                destEqId: destEq.id,
+                destSerial: destEq.serial,
+                destName: destEq.name,
+                itemName: boxItem.name,
+                qty: moveQty,
+                reason: reason,
+                active: true,
+                date: new Date().toLocaleDateString()
+            });
+
+            document.getElementById('transferForm').reset();
+            saveData();
+            alert(`✅ Successfully borrowed ${moveQty} x ${boxItem.name} from ${sourceEq.name} (${sourceEq.serial}) to ${destEq.name} (${destEq.serial})!`);
+        }
+
+        function returnBorrowedAccessory(transferId) {
+            const transfer = borrowedTransfers.find(t => t.id === transferId);
+            if(!transfer) return;
+
+            const sourceEq = inventory.find(i => i.id === transfer.sourceEqId);
+            const destEq = inventory.find(i => i.id === transfer.destEqId);
+
+            if(confirm(`Return ${transfer.qty} x ${transfer.itemName} back to original Set (${transfer.sourceName} - ${transfer.sourceSerial})?`)) {
+                // Restore to Source Set
+                if(sourceEq) {
+                    let sourceBoxItem = sourceEq.boxItems.find(b => b.name.toLowerCase() === transfer.itemName.toLowerCase());
+                    if(sourceBoxItem) {
+                        sourceBoxItem.qty += transfer.qty;
+                    } else {
+                        sourceEq.boxItems.push({ name: transfer.itemName, qty: transfer.qty, originalQty: transfer.qty });
+                    }
+                }
+
+                // Deduct from Destination Set
+                if(destEq && destEq.boxItems) {
+                    let destBoxItem = destEq.boxItems.find(b => b.name.toLowerCase() === transfer.itemName.toLowerCase());
+                    if(destBoxItem) {
+                        destBoxItem.qty -= transfer.qty;
+                        if(destBoxItem.qty <= 0 && destBoxItem.originalQty === 0) {
+                            destEq.boxItems = destEq.boxItems.filter(b => b.name.toLowerCase() !== transfer.itemName.toLowerCase());
+                        }
+                    }
+                }
+
+                transfer.active = false;
+                saveData();
+                alert(`✅ ${transfer.itemName} successfully restored back to its original box set!`);
+            }
+        }
+
+        function renderBorrowedList() {
+            const container = document.getElementById('borrowed_list_container');
+            const activeTransfers = borrowedTransfers.filter(t => t.active);
+
+            if(activeTransfers.length === 0) {
+                container.innerHTML = '<small class="text-muted">No borrowed or transferred accessories currently outstanding.</small>';
+                return;
+            }
+
+            container.innerHTML = activeTransfers.map(t => `
+                <div class="p-2 border rounded bg-white mb-2 d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge bg-warning text-dark"><i class="bi bi-arrow-left-right me-1"></i>${t.itemName} (x${t.qty})</span>
+                        <div class="small mt-1">
+                            From: <b class="text-danger">${t.sourceName} (${t.sourceSerial})</b> ➔ 
+                            To: <b class="text-primary">${t.destName} (${t.destSerial})</b>
+                        </div>
+                        <div class="text-muted small" style="font-size:0.75rem;">Reason: ${t.reason}</div>
+                    </div>
+                    <button class="btn btn-sm btn-outline-success fw-bold" onclick="returnBorrowedAccessory(${t.id})">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Return to Original Set
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // --- SUGGESTION BOX ---
+        function getUniqueSuggestedNames() {
+            const invNames = inventory.map(item => item.name);
+            return [...new Set([...invNames, ...customSuggestions])];
+        }
+
+        function filterSuggestions() {
+            const inputVal = document.getElementById('m_name').value.toLowerCase().trim();
+            const box = document.getElementById('custom_suggestion_box');
+            const names = getUniqueSuggestedNames();
+            const matches = names.filter(n => n.toLowerCase().includes(inputVal));
+
+            if (matches.length === 0 || (matches.length === 1 && matches[0].toLowerCase() === inputVal)) {
+                box.classList.add('d-none');
+                box.innerHTML = '';
+                return;
+            }
+
+            box.innerHTML = matches.map(name => `
+                <div class="suggestion-item" onclick="selectSuggestion('${name.replace(/'/g, "\\'")}')">${name}</div>
+            `).join('');
+
+            box.classList.remove('d-none');
+        }
+
+        function selectSuggestion(name) {
+            document.getElementById('m_name').value = name;
+            document.getElementById('custom_suggestion_box').classList.add('d-none');
+        }
+
+        document.addEventListener('click', function(e) {
+            const nameInput = document.getElementById('m_name');
+            const box = document.getElementById('custom_suggestion_box');
+            if (e.target !== nameInput && !box.contains(e.target)) {
+                box.classList.add('d-none');
+            }
+        });
+
+        function openManageSuggestionsModal() {
+            const container = document.getElementById('suggestionListContainer');
+            const names = getUniqueSuggestedNames();
+            container.innerHTML = '';
+
+            if (names.length === 0) {
+                container.innerHTML = '<div class="p-3 text-center text-muted">No suggestion names stored yet.</div>';
+            } else {
+                names.forEach(name => {
+                    container.innerHTML += `
+                        <div class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+                            <span class="fw-semibold text-dark">${name}</span>
+                            <button class="btn btn-outline-danger btn-sm py-0 px-2" onclick="removeSuggestionName('${name.replace(/'/g, "\\'")}')">
+                                <i class="bi bi-trash"></i> Remove
+                            </button>
+                        </div>
+                    `;
+                });
+            }
+
+            manageSuggestionsModalObj = new bootstrap.Modal(document.getElementById('manageSuggestionsModal'));
+            manageSuggestionsModalObj.show();
+        }
+
+        function removeSuggestionName(nameToRemove) {
+            if(confirm(`Remove "${nameToRemove}" from suggestions?`)) {
+                customSuggestions = customSuggestions.filter(n => n.toLowerCase() !== nameToRemove.toLowerCase());
+                saveData();
+                openManageSuggestionsModal();
+            }
+        }
+
+        // --- TEAM MEMBERS ---
+        function addTeamMember() {
+            const input = document.getElementById('member_input');
+            const val = input.value.trim();
+            if(val && !currentTeamMembers.includes(val)) {
+                currentTeamMembers.push(val);
+                input.value = '';
+                renderTeamMemberChips();
+            }
+        }
+
+        function removeTeamMember(index) {
+            currentTeamMembers.splice(index, 1);
+            renderTeamMemberChips();
+        }
+
+        function renderTeamMemberChips() {
+            const container = document.getElementById('team_members_container');
+            if(currentTeamMembers.length === 0) {
+                container.innerHTML = '<small class="text-muted" id="empty_member_text">No additional members added yet.</small>';
+                return;
+            }
+            container.innerHTML = currentTeamMembers.map((m, idx) => `
+                <span class="team-member-chip">
+                    ${m} <i class="bi bi-x-circle-fill text-danger ms-1" style="cursor:pointer;" onclick="removeTeamMember(${idx})"></i>
+                </span>
+            `).join('');
+        }
+
+        // --- MASTER INVENTORY ---
+        function addMasterItem(e) {
+            e.preventDefault();
+            const itemType = document.getElementById('m_type').value;
+            const name = document.getElementById('m_name').value.trim();
+
+            if (!customSuggestions.includes(name)) {
+                customSuggestions.push(name);
+            }
+
+            if (itemType === 'EQUIPMENT') {
+                const serial = document.getElementById('m_serial').value.trim();
+                const condition = document.getElementById('m_condition').value;
+                const problems = document.getElementById('m_problems').value.trim();
+
+                const duplicateItem = inventory.find(item => item.type === 'EQUIPMENT' && item.serial.toLowerCase() === serial.toLowerCase());
+                if (duplicateItem) {
+                    alert(`⚠️ Warning: Duplicate Serial Number "${serial}" exists!`);
+                    return;
+                }
+
+                inventory.push({
+                    id: Date.now(),
+                    type: 'EQUIPMENT',
+                    name: name,
+                    serial: serial,
+                    boxItems: [...currentBoxItems], 
+                    quantity: 1,
+                    condition: condition,
+                    problems: problems || 'No reported issues',
+                    isIssued: false,
+                    exported: false
+                });
+
+                document.getElementById('m_serial').value = '';
+                document.getElementById('m_problems').value = '';
+                currentBoxItems = [];
+                renderBoxItemChips();
+                alert(`✅ ${name} (Serial: ${serial}) with Box Set added to inventory.`);
+
+            } else {
+                const qty = parseInt(document.getElementById('m_qty').value);
+                const existingAcc = inventory.find(item => item.type === 'ACCESSORY' && item.name.toLowerCase() === name.toLowerCase());
+
+                if (existingAcc) {
+                    existingAcc.quantity += qty;
+                    alert(`✅ Added ${qty} to ${name}. Total Stock: ${existingAcc.quantity}`);
+                } else {
+                    inventory.push({
+                        id: Date.now(),
+                        type: 'ACCESSORY',
+                        name: name,
+                        serial: 'N/A',
+                        boxItems: [],
+                        quantity: qty,
+                        condition: 'Good',
+                        problems: 'Standard Stock',
+                        isIssued: false,
+                        exported: false
+                    });
+                    alert(`✅ Loose Accessory ${name} (Qty: ${qty}) added.`);
+                }
+
+                document.getElementById('m_qty').value = '';
+            }
+
+            document.getElementById('m_name').value = '';
+            document.getElementById('custom_suggestion_box').classList.add('d-none');
+            saveData();
+        }
+
+        function deleteMasterItem(id) {
+            const item = inventory.find(i => i.id === id);
+            if(item && item.isIssued) {
+                alert("Cannot delete an item while it is currently issued!");
+                return;
+            }
+            if(confirm("Delete this item permanently from inventory?")) {
+                inventory = inventory.filter(i => i.id !== id);
+                saveData();
+            }
+        }
+
+        // --- RENDER MULTI-ITEM ISSUE CHECKBOXES ---
+        function renderMultiItemSelection() {
+            const container = document.getElementById('multi_item_container');
+            container.innerHTML = '';
+
+            const availableEquipment = inventory.filter(i => i.type === 'EQUIPMENT' && !i.isIssued);
+            const availableAccessories = inventory.filter(i => i.type === 'ACCESSORY' && i.quantity > 0);
+
+            if(availableEquipment.length === 0 && availableAccessories.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted py-3">No available items in stock to issue.</div>';
+                return;
+            }
+
+            let html = '';
+
+            if(availableEquipment.length > 0) {
+                html += '<h6 class="fw-bold text-dark border-bottom pb-1 mb-2"><i class="bi bi-tools me-1"></i> Available Main Equipment (Includes Box Set)</h6>';
+                availableEquipment.forEach(item => {
+                    let boxText = '';
+                    if(item.boxItems && item.boxItems.length > 0) {
+                        boxText = `<div class="mt-1">${item.boxItems.map(b => `<span class="box-item-chip">${b.name} (x${b.qty})</span>`).join('')}</div>`;
+                    }
+                    html += `
+                        <div class="border-bottom py-2">
+                            <div class="form-check">
+                                <input class="form-check-input issue-checkbox" type="checkbox" data-type="EQUIPMENT" data-id="${item.id}" id="chk_${item.id}">
+                                <label class="form-check-label d-flex justify-content-between align-items-center w-100" for="chk_${item.id}">
+                                    <span><strong>${item.name}</strong> <small class="text-primary">(Serial: ${item.serial})</small></span>
+                                    <span class="badge bg-light text-dark border">${item.condition}</span>
+                                </label>
+                            </div>
+                            ${boxText}
+                        </div>
+                    `;
+                });
+            }
+
+            if(availableAccessories.length > 0) {
+                html += '<h6 class="fw-bold text-dark border-bottom pb-1 mt-3 mb-2"><i class="bi bi-box-seam me-1"></i> Loose Accessories & Consumables</h6>';
+                availableAccessories.forEach(item => {
+                    html += `
+                        <div class="row align-items-center py-1 border-bottom">
+                            <div class="col-8">
+                                <div class="form-check">
+                                    <input class="form-check-input issue-checkbox" type="checkbox" data-type="ACCESSORY" data-id="${item.id}" id="chk_${item.id}" onchange="toggleAccQtyInput(${item.id})">
+                                    <label class="form-check-label" for="chk_${item.id}">
+                                        <strong>${item.name}</strong> <small class="text-muted">(Available: ${item.quantity})</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <input type="number" class="form-control form-control-sm acc-qty-input" id="qty_${item.id}" min="1" max="${item.quantity}" value="1" disabled placeholder="Qty">
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            container.innerHTML = html;
+        }
+
+        function toggleAccQtyInput(id) {
+            const chk = document.getElementById(`chk_${id}`);
+            const qtyInput = document.getElementById(`qty_${id}`);
+            if(chk.checked) {
+                qtyInput.removeAttribute('disabled');
+            } else {
+                qtyInput.setAttribute('disabled', 'disabled');
+            }
+        }
+
+        // --- MULTI-ITEM ISSUE SUBMISSION ---
+        function issueEquipment(e) {
+            e.preventDefault();
+            const date = document.getElementById('i_date').value;
+            const leader = document.getElementById('i_leader').value.trim();
+            const receiver = document.getElementById('i_receiver').value.trim();
+            const projectId = document.getElementById('i_project_id').value.trim();
+            const remarks = document.getElementById('i_remarks').value.trim();
+
+            const checkboxes = document.querySelectorAll('.issue-checkbox:checked');
+
+            if(checkboxes.length === 0) {
+                alert("⚠️ Please select at least ONE item or equipment set to issue!");
+                return;
+            }
+
+            const groupId = 'GRP-' + Date.now();
+            let issuedCount = 0;
+
+            checkboxes.forEach(chk => {
+                const itemId = parseInt(chk.getAttribute('data-id'));
+                const itemType = chk.getAttribute('data-type');
+                const item = inventory.find(i => i.id === itemId);
+
+                if(!item) return;
+
+                if(itemType === 'EQUIPMENT') {
+                    item.isIssued = true;
+                    
+                    issueLogs.unshift({
+                        id: Date.now() + Math.floor(Math.random() * 1000),
+                        groupId: groupId,
+                        type: 'ISSUE',
+                        itemType: 'EQUIPMENT',
+                        issueDate: date,
+                        returnDate: '',
+                        leader: leader,
+                        receiver: receiver,
+                        returner: '',
+                        mismatchReason: '',
+                        projectId: projectId,
+                        members: [...currentTeamMembers],
+                        name: item.name,
+                        serial: item.serial,
+                        boxItems: item.boxItems ? JSON.parse(JSON.stringify(item.boxItems)) : [], 
+                        issueCondition: item.condition,
+                        issueProblems: item.problems,
+                        returnCondition: '',
+                        returnProblems: '',
+                        remarks: remarks,
+                        fineAmount: '',
+                        active: true,
+                        exported: false
+                    });
+                    issuedCount++;
+
+                } else if(itemType === 'ACCESSORY') {
+                    const qtyInput = document.getElementById(`qty_${itemId}`);
+                    const issueQty = parseInt(qtyInput.value) || 1;
+
+                    if(issueQty > item.quantity) {
+                        alert(`Cannot issue ${issueQty} of ${item.name}. Only ${item.quantity} available!`);
+                        return;
+                    }
+
+                    item.quantity -= issueQty;
+
+                    issueLogs.unshift({
+                        id: Date.now() + Math.floor(Math.random() * 1000),
+                        groupId: groupId,
+                        type: 'ISSUE',
+                        itemType: 'ACCESSORY',
+                        issueDate: date,
+                        returnDate: '',
+                        leader: leader,
+                        receiver: receiver,
+                        returner: '',
+                        mismatchReason: '',
+                        projectId: projectId,
+                        members: [...currentTeamMembers],
+                        name: item.name,
+                        serial: `ACC-ISSUE (Qty: ${issueQty})`,
+                        boxItems: [],
+                        issueCondition: 'Good',
+                        issueProblems: `Issued Quantity: ${issueQty}`,
+                        returnCondition: '',
+                        returnProblems: '',
+                        remarks: remarks,
+                        fineAmount: '',
+                        active: true,
+                        exported: false
+                    });
+                    issuedCount++;
+                }
+            });
+
+            document.getElementById('issueForm').reset();
+            document.getElementById('i_date').valueAsDate = new Date();
+            currentTeamMembers = [];
+            renderTeamMemberChips();
+            saveData();
+            alert(`✅ Successfully issued ${issuedCount} item set(s) to team!`);
+        }
+
+        // --- DYNAMIC LOST FORM CONTROLS & DEDUCTION LOGIC ---
+        function toggleLostTypeFields() {
+            const targetType = document.getElementById('l_target_type').value;
+            const boxDiv = document.getElementById('lost_box_item_div');
+            const boxQtyDiv = document.getElementById('lost_box_qty_div');
+            const boxSelect = document.getElementById('l_box_item');
+
+            if (targetType === 'BOX_ITEM') {
+                boxDiv.classList.remove('d-none');
+                boxQtyDiv.classList.remove('d-none');
+                boxSelect.setAttribute('required', 'required');
+                updateLostBoxItemsDropdown();
+            } else {
+                boxDiv.classList.add('d-none');
+                boxQtyDiv.classList.add('d-none');
+                boxSelect.removeAttribute('required');
+            }
+        }
+
+        function updateLostBoxItemsDropdown() {
+            const targetType = document.getElementById('l_target_type').value;
+            if (targetType !== 'BOX_ITEM') return;
+
+            const name = document.getElementById('l_name').value;
+            const serial = document.getElementById('l_serial').value;
+            const boxSelect = document.getElementById('l_box_item');
+            boxSelect.innerHTML = '<option value="">-- Select Lost Box Accessory --</option>';
+
+            const item = inventory.find(i => i.name === name && i.serial === serial && i.type === 'EQUIPMENT');
+            if (!item || !item.boxItems || item.boxItems.length === 0) {
+                boxSelect.innerHTML = '<option value="">No box accessories found in this equipment set</option>';
+                return;
+            }
+
+            item.boxItems.forEach((b, idx) => {
+                if (b.qty > 0) {
+                    const opt = document.createElement('option');
+                    opt.value = idx;
+                    opt.textContent = `${b.name} (Current Qty in Set: ${b.qty})`;
+                    boxSelect.appendChild(opt);
+                }
+            });
+        }
+
+        function reportLostEquipment(e) {
+            e.preventDefault();
+            const date = document.getElementById('l_date').value;
+            const person = document.getElementById('l_person').value.trim();
+            const targetType = document.getElementById('l_target_type').value;
+            const name = document.getElementById('l_name').value;
+            const serial = document.getElementById('l_serial').value;
+            const incident = document.getElementById('l_incident').value.trim();
+            const fir = document.getElementById('l_fir').value.trim() || 'N/A';
+            const recovery = document.getElementById('l_recovery').value;
+            const fineAmount = document.getElementById('l_fine_amount').value.trim() || 'N/A';
+
+            const itemIndex = inventory.findIndex(i => i.name === name && (i.serial === serial || i.type === 'ACCESSORY'));
+            
+            if (itemIndex === -1) {
+                alert("⚠️ Selected Item not found in Inventory!");
+                return;
+            }
+
+            const item = inventory[itemIndex];
+
+            // 1. REPORT FULL ITEM / ACCESSORY LOST
+            if (targetType === 'FULL_ITEM') {
+                if(!confirm(`Are you sure you want to report the FULL ITEM (${name} - ${serial}) as LOST?`)) return;
+
+                if (item.type === 'EQUIPMENT') {
+                    inventory.splice(itemIndex, 1);
+                } else {
+                    item.quantity -= 1;
+                    if (item.quantity <= 0) inventory.splice(itemIndex, 1);
+                }
+
+                issueLogs.unshift({
+                    id: Date.now(),
+                    groupId: 'LOST-' + Date.now(),
+                    type: 'LOST',
+                    itemType: item.type,
+                    issueDate: date,
+                    returnDate: 'N/A',
+                    leader: person,
+                    receiver: person,
+                    returner: 'N/A',
+                    mismatchReason: '',
+                    projectId: 'LOST INCIDENT',
+                    members: [],
+                    name: name,
+                    serial: serial,
+                    boxItems: item.boxItems || [],
+                    issueCondition: 'LOST',
+                    issueProblems: `FULL ITEM LOST | Incident: ${incident} | FIR: ${fir} | Recovery: ${recovery}`,
+                    returnCondition: 'LOST',
+                    returnProblems: 'ITEM MISSING FROM STOCK',
+                    remarks: incident,
+                    fineAmount: fineAmount,
+                    active: false,
+                    exported: false
+                });
+
+            } 
+            // 2. REPORT SPECIFIC BOX ACCESSORY LOST FROM SET
+            else {
+                const boxIndex = parseInt(document.getElementById('l_box_item').value);
+                const lostQty = parseInt(document.getElementById('l_qty').value) || 1;
+
+                if (isNaN(boxIndex) || !item.boxItems || !item.boxItems[boxIndex]) {
+                    alert("⚠️ Please select a valid Box Accessory component!");
+                    return;
+                }
+
+                const boxAcc = item.boxItems[boxIndex];
+                if (lostQty > boxAcc.qty) {
+                    alert(`⚠️ Cannot report ${lostQty} lost. Only ${boxAcc.qty} available in this set!`);
+                    return;
+                }
+
+                if(!confirm(`Are you sure you want to report ${lostQty} x ${boxAcc.name} as LOST from ${name} (${serial}) set?`)) return;
+
+                // Deduct Lost Qty from Equipment Set
+                boxAcc.qty -= lostQty;
+
+                issueLogs.unshift({
+                    id: Date.now(),
+                    groupId: 'LOST-ACC-' + Date.now(),
+                    type: 'LOST',
+                    itemType: 'BOX_ACCESSORY',
+                    issueDate: date,
+                    returnDate: 'N/A',
+                    leader: person,
+                    receiver: person,
+                    returner: 'N/A',
+                    mismatchReason: '',
+                    projectId: 'SET ACCESSORY LOST',
+                    members: [],
+                    name: `${name} [Lost Box Part: ${boxAcc.name} (x${lostQty})]`,
+                    serial: serial,
+                    boxItems: [{ name: boxAcc.name, qty: lostQty, originalQty: boxAcc.originalQty }],
+                    issueCondition: 'PARTIAL SET LOST',
+                    issueProblems: `Box Item (${boxAcc.name} x${lostQty}) Lost | Incident: ${incident} | FIR: ${fir} | Action: ${recovery}`,
+                    returnCondition: 'INCOMPLETE SET',
+                    returnProblems: `Set Accessory ${boxAcc.name} missing`,
+                    remarks: incident,
+                    fineAmount: fineAmount,
+                    active: false,
+                    exported: false
+                });
+            }
+
+            document.getElementById('lostForm').reset();
+            document.getElementById('l_date').valueAsDate = new Date();
+            toggleLostTypeFields();
+            saveData();
+            alert('✅ Lost report submitted successfully and stock updated!');
+        }
+
+        // --- RETURN SINGLE ITEM MODAL LOGIC ---
+        let originalReceiver = "";
+
+        function openReturnModal(logId) {
+            const log = issueLogs.find(l => l.id === logId);
+            if(!log) return;
+
+            originalReceiver = log.receiver || log.leader;
+
+            document.getElementById('modal_log_id').value = log.id;
+            document.getElementById('modal_eq_name').innerText = log.name;
+            document.getElementById('modal_eq_serial').innerText = log.serial;
+            
+            // Box Set Items Display
+            const boxContainer = document.getElementById('modal_eq_box_items');
+            if(log.boxItems && log.boxItems.length > 0) {
+                boxContainer.innerHTML = log.boxItems.map(b => `<span class="box-item-chip"><i class="bi bi-box me-1"></i>${b.name} (x${b.qty})</span>`).join('');
+            } else {
+                boxContainer.innerHTML = '<span class="text-muted small">No Box Accessories Recorded</span>';
+            }
+
+            document.getElementById('modal_project_id').innerText = log.projectId || 'N/A';
+            document.getElementById('modal_issue_receiver').innerText = originalReceiver;
+            document.getElementById('modal_issue_cond').innerText = log.issueCondition;
+            document.getElementById('modal_issue_prob').innerText = log.issueProblems || 'None';
+            
+            document.getElementById('r_date').valueAsDate = new Date();
+            document.getElementById('r_returner').value = originalReceiver;
+            document.getElementById('r_condition').value = log.issueCondition;
+            document.getElementById('r_problems').value = log.issueProblems !== 'No reported issues' ? log.issueProblems : '';
+
+            checkPersonMismatch();
+
+            returnModalObj = new bootstrap.Modal(document.getElementById('returnModal'));
+            returnModalObj.show();
+        }
+
+        function checkPersonMismatch() {
+            const returnerVal = document.getElementById('r_returner').value.trim();
+            const mismatchDiv = document.getElementById('mismatch_reason_div');
+            
+            if(returnerVal.toLowerCase() !== originalReceiver.toLowerCase() && returnerVal !== "") {
+                mismatchDiv.classList.remove('d-none');
+            } else {
+                mismatchDiv.classList.add('d-none');
+            }
+        }
+
+        function submitReturn(e) {
+            e.preventDefault();
+            const logId = parseInt(document.getElementById('modal_log_id').value);
+            const returnDate = document.getElementById('r_date').value;
+            const returner = document.getElementById('r_returner').value.trim();
+            const returnCond = document.getElementById('r_condition').value;
+            const returnProbs = document.getElementById('r_problems').value.trim() || 'No reported issues';
+            const mismatchReason = document.getElementById('r_mismatch_reason').value.trim();
+
+            const log = issueLogs.find(l => l.id === logId);
+            if(log) {
+                log.active = false;
+                log.returnDate = returnDate;
+                log.returner = returner;
+                log.returnCondition = returnCond;
+                log.returnProblems = returnProbs;
+                log.mismatchReason = mismatchReason;
+                log.exported = false;
+
+                if (log.itemType === 'EQUIPMENT') {
+                    const item = inventory.find(i => i.serial === log.serial);
+                    if(item) {
+                        item.isIssued = false;
+                        item.condition = returnCond;
+                        item.problems = returnProbs;
+                    }
+                } else {
+                    const match = log.serial.match(/\d+/);
+                    const qtyToReturn = match ? parseInt(match[0]) : 1;
+
+                    const item = inventory.find(i => i.type === 'ACCESSORY' && i.name === log.name);
+                    if(item) {
+                        item.quantity += qtyToReturn;
+                    } else {
+                        inventory.push({
+                            id: Date.now(),
+                            type: 'ACCESSORY',
+                            name: log.name,
+                            serial: 'N/A',
+                            boxItems: [],
+                            quantity: qtyToReturn,
+                            condition: returnCond,
+                            problems: returnProbs,
+                            isIssued: false,
+                            exported: false
+                        });
+                    }
+                }
+            }
+
+            returnModalObj.hide();
+            saveData();
+            alert('Item set successfully returned to stock!');
+        }
+
+        // --- DROPDOWNS ---
+        function updateLostSerialDropdown() {
+            const selectedName = document.getElementById('l_name').value;
+            const serialSelect = document.getElementById('l_serial');
+            serialSelect.innerHTML = '<option value="">-- Select Serial / Ref --</option>';
+
+            if(!selectedName) return;
+
+            const list = inventory.filter(i => i.name === selectedName);
+            list.forEach(i => {
+                const opt = document.createElement('option');
+                if (i.type === 'EQUIPMENT') {
+                    opt.value = i.serial;
+                    opt.textContent = `Serial: ${i.serial} ${i.isIssued ? '(Issued)' : '(In Stock)'}`;
+                } else {
+                    opt.value = i.name;
+                    opt.textContent = `Accessory Stock (${i.quantity} available)`;
+                }
+                serialSelect.appendChild(opt);
+            });
+
+            updateLostBoxItemsDropdown();
+        }
+
+        function renderIssueDropdowns() {
+            const lostNameSelect = document.getElementById('l_name');
+            const allNames = [...new Set(inventory.map(i => i.name))];
+
+            lostNameSelect.innerHTML = '<option value="">-- Select Item --</option>';
+            allNames.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name; opt.textContent = name;
+                lostNameSelect.appendChild(opt);
+            });
+        }
+
+        // --- RENDER TABLES ---
+        function renderAll() {
+            renderSummaryTable();
+            renderMasterTable();
+            renderMultiItemSelection();
+            renderIssueDropdowns();
+            updateTransferDropdowns();
+            renderBorrowedList();
+            renderLogs();
+        }
+
+        function renderSummaryTable() {
+            const tbody = document.querySelector('#summaryTable tbody');
+            tbody.innerHTML = '';
+
+            const summary = {};
+            inventory.forEach(item => {
+                if(!summary[item.name]) summary[item.name] = { total: 0, available: 0, type: item.type };
+                
+                if(item.type === 'EQUIPMENT') {
+                    summary[item.name].total += 1;
+                    if(!item.isIssued) summary[item.name].available += 1;
+                } else {
+                    summary[item.name].total += item.quantity;
+                    summary[item.name].available += item.quantity;
+                }
+            });
+
+            const keys = Object.keys(summary);
+            document.getElementById('totalEquipmentTypes').innerText = `${keys.length} Items`;
+
+            if(keys.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">No items added yet.</td></tr>';
+                return;
+            }
+
+            keys.forEach(name => {
+                const avail = summary[name].available;
+                const badgeClass = avail > 0 ? 'bg-success' : 'bg-danger';
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="fw-bold">${name} <small class="text-muted">(${summary[name].type})</small></td>
+                        <td class="text-center fw-semibold">${summary[name].total}</td>
+                        <td class="text-center"><span class="badge ${badgeClass}">${avail} Available</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderMasterTable() {
+            const tbody = document.querySelector('#masterTable tbody');
+            tbody.innerHTML = '';
+
+            if(inventory.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">No item registered.</td></tr>';
+                return;
+            }
+
+            inventory.forEach(item => {
+                if (item.type === 'EQUIPMENT') {
+                    const statusBadge = item.isIssued 
+                        ? '<span class="badge badge-issued">Issued</span>' 
+                        : '<span class="badge badge-available">Available</span>';
+
+                    let condClass = 'cond-good';
+                    if(item.condition === 'Minor Fault') condClass = 'cond-minor';
+                    if(item.condition === 'Damaged') condClass = 'cond-damaged';
+
+                    // Check Set Integrity (Missing/Borrowed Accessories Warning)
+                    let isSetIncomplete = false;
+                    let missingDetails = [];
+
+                    if(item.boxItems) {
+                        item.boxItems.forEach(b => {
+                            if(b.originalQty && b.qty < b.originalQty) {
+                                isSetIncomplete = true;
+                                missingDetails.push(`${b.name} (Missing: ${b.originalQty - b.qty})`);
+                            }
+                        });
+                    }
+
+                    let setIntegrityBadge = isSetIncomplete 
+                        ? `<div class="mt-1"><span class="badge badge-incomplete"><i class="bi bi-exclamation-triangle-fill me-1"></i>INCOMPLETE SET (${missingDetails.join(', ')})</span></div>`
+                        : (item.boxItems && item.boxItems.length > 0 ? `<div class="mt-1"><span class="badge bg-success bg-opacity-10 text-success border border-success" style="font-size:0.7rem;"><i class="bi bi-check-circle me-1"></i>COMPLETE SET</span></div>` : '');
+
+                    let boxChips = '';
+                    if(item.boxItems && item.boxItems.length > 0) {
+                        boxChips = `<div class="mt-1">${item.boxItems.map(b => `<span class="box-item-chip"><i class="bi bi-box me-1"></i>${b.name} (${b.qty})</span>`).join('')}</div>`;
+                    }
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="fw-bold text-primary">${item.serial}</td>
+                            <td>
+                                <div class="fw-bold">${item.name}</div>
+                                ${setIntegrityBadge}
+                                ${boxChips}
+                            </td>
+                            <td>
+                                <div><span class="condition-badge ${condClass}">${item.condition}</span></div>
+                                <small class="text-muted">${item.problems || 'No reported issues'}</small>
+                            </td>
+                            <td>${statusBadge}</td>
+                            <td>
+                                <button class="btn btn-outline-danger btn-sm py-0 px-2" onclick="deleteMasterItem(${item.id})"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    tbody.innerHTML += `
+                        <tr class="table-warning bg-opacity-10">
+                            <td><span class="badge badge-accessory">ACCESSORY</span></td>
+                            <td class="fw-bold">${item.name}</td>
+                            <td><small class="text-muted">Loose Consumable Item</small></td>
+                            <td><span class="badge bg-dark">Qty: ${item.quantity}</span></td>
+                            <td>
+                                <button class="btn btn-outline-danger btn-sm py-0 px-2" onclick="deleteMasterItem(${item.id})"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                }
+            });
+        }
+
+        function renderLogs() {
+            const pendingTbody = document.querySelector('#pendingLogTable tbody');
+            const returnedTbody = document.querySelector('#returnedLogTable tbody');
+            const query = document.getElementById('searchLog').value.toLowerCase();
+
+            pendingTbody.innerHTML = '';
+            returnedTbody.innerHTML = '';
+
+            const filteredLogs = issueLogs.filter(l => 
+                l.leader.toLowerCase().includes(query) || 
+                (l.receiver && l.receiver.toLowerCase().includes(query)) ||
+                (l.returner && l.returner.toLowerCase().includes(query)) ||
+                l.name.toLowerCase().includes(query) || 
+                l.serial.toLowerCase().includes(query) ||
+                (l.projectId && l.projectId.toLowerCase().includes(query))
+            );
+
+            const pendingLogs = filteredLogs.filter(l => l.active === true);
+            const historyLogs = filteredLogs.filter(l => l.active === false);
+
+            document.getElementById('pendingCount').innerText = `${pendingLogs.length} Pending`;
+            document.getElementById('returnedCount').innerText = `${historyLogs.length} History Records`;
+
+            // 1. PENDING LOGS
+            if(pendingLogs.length === 0) {
+                pendingTbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">No pending items to return. All issued items are clear!</td></tr>';
+            } else {
+                pendingLogs.forEach(log => {
+                    const memberChips = log.members && log.members.length > 0 
+                        ? log.members.map(m => `<span class="team-member-chip">${m}</span>`).join('') 
+                        : '<small class="text-muted">None</small>';
+
+                    let issueCondClass = log.issueCondition === 'Minor Fault' ? 'cond-minor' : (log.issueCondition === 'Damaged' ? 'cond-damaged' : 'cond-good');
+
+                    let boxChips = '';
+                    if(log.boxItems && log.boxItems.length > 0) {
+                        boxChips = `<div class="mt-1">${log.boxItems.map(b => `<span class="box-item-chip"><i class="bi bi-box me-1"></i>${b.name} (x${b.qty})</span>`).join('')}</div>`;
+                    }
+
+                    pendingTbody.innerHTML += `
+                        <tr class="table-warning bg-opacity-10">
+                            <td><small class="fw-bold">${log.issueDate}</small></td>
+                            <td><div class="fw-bold text-primary">${log.projectId || 'N/A'}</div></td>
+                            <td>
+                                <div><small>Leader:</small> <b>${log.leader}</b></div>
+                                <div><small>Receiver:</small> <b class="text-info">${log.receiver || log.leader}</b></div>
+                                <div class="mt-1">${memberChips}</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold">${log.name}</div>
+                                <small class="text-muted">Ref/Serial: <b>${log.serial}</b></small>
+                                ${boxChips}
+                            </td>
+                            <td>
+                                <div><span class="condition-badge ${issueCondClass}">${log.issueCondition}</span></div>
+                                <small class="text-muted d-block">${log.issueProblems || 'No issues'}</small>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-danger" onclick="openReturnModal(${log.id})"><i class="bi bi-box-arrow-in-left me-1"></i> Return</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            // 2. RETURNED LOGS
+            if(historyLogs.length === 0) {
+                returnedTbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">No returned or incident history logs found.</td></tr>';
+            } else {
+                historyLogs.forEach(log => {
+                    if(log.type === 'LOST') {
+                        returnedTbody.innerHTML += `
+                            <tr class="table-danger">
+                                <td><span class="badge badge-lost mb-1">LOST REPORT</span><br><small class="fw-bold">${log.issueDate}</small></td>
+                                <td><span class="badge bg-danger">MISSING / LOST</span></td>
+                                <td><div class="fw-bold">${log.leader}</div><small class="text-muted">In-Charge</small></td>
+                                <td><div class="fw-bold text-danger">${log.name}</div><small>Ref: <b>${log.serial}</b></small></td>
+                                <td>
+                                    <small class="d-block">${log.issueProblems}</small>
+                                    <span class="badge bg-warning text-dark mt-1">Fine/Comp: ${log.fineAmount || 'N/A'}</span>
+                                </td>
+                                <td><span class="badge bg-dark"><i class="bi bi-x-circle me-1"></i> Logged & Updated Stock</span></td>
+                            </tr>
+                        `;
+                        return;
+                    }
+
+                    const memberChips = log.members && log.members.length > 0 
+                        ? log.members.map(m => `<span class="team-member-chip">${m}</span>`).join('') 
+                        : '<small class="text-muted">None</small>';
+
+                    let returnCondClass = log.returnCondition === 'Minor Fault' ? 'cond-minor' : (log.returnCondition === 'Damaged' ? 'cond-damaged' : 'cond-good');
+
+                    let boxChips = '';
+                    if(log.boxItems && log.boxItems.length > 0) {
+                        boxChips = `<div class="mt-1">${log.boxItems.map(b => `<span class="box-item-chip"><i class="bi bi-box me-1"></i>${b.name} (x${b.qty})</span>`).join('')}</div>`;
+                    }
+
+                    returnedTbody.innerHTML += `
+                        <tr>
+                            <td>
+                                <small class="fw-bold text-muted">Issued: ${log.issueDate}</small><br>
+                                <small class="fw-bold text-success">Returned: ${log.returnDate}</small>
+                            </td>
+                            <td><div class="fw-bold text-primary">${log.projectId || 'N/A'}</div></td>
+                            <td>
+                                <div><small>Receiver:</small> <b>${log.receiver || log.leader}</b></div>
+                                <div><small>Returned By:</small> <b class="text-success">${log.returner}</b></div>
+                                ${log.mismatchReason ? `<small class="text-danger d-block"><b>Reason:</b> ${log.mismatchReason}</small>` : ''}
+                                <div class="mt-1">${memberChips}</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold">${log.name}</div>
+                                <small class="text-muted">Ref/Serial: <b>${log.serial}</b></small>
+                                ${boxChips}
+                            </td>
+                            <td>
+                                <div><span class="condition-badge ${returnCondClass}">${log.returnCondition}</span></div>
+                                <small class="text-muted d-block">${log.returnProblems}</small>
+                            </td>
+                            <td><span class="badge badge-available"><i class="bi bi-check2-circle me-1"></i> Completed</span></td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        // --- RESET WORKFLOW ---
+        function triggerResetWorkflow() {
+            if(issueLogs.length === 0 && borrowedTransfers.length === 0) {
+                alert("No movement or incident logs available to reset.");
+                return;
+            }
+
+            if(confirm("To reset Part 2 Logs, you MUST first download the backup CSV file.\n\nClick OK to open download options.")) {
+                pendingReset = true;
+                openExportModal();
+            }
+        }
+
+        // --- EXPORT MODAL & CSV EXPORT WITH DYNAMIC DAILY TIMESTAMP ---
+        function openExportModal() {
+            exportModalObj = new bootstrap.Modal(document.getElementById('exportModal'));
+            exportModalObj.show();
+        }
+
+        function processExport(e) {
+            e.preventDefault();
+            const selectedMonth = document.getElementById('exp_month').value;
+            const scope = document.querySelector('input[name="exportScope"]:checked').value;
+
+            if(!selectedMonth) {
+                alert("Please select a valid month!");
+                return;
+            }
+
+            let logsToExport = [];
+            let inventoryToExport = [];
+
+            if(scope === 'ALL') {
+                logsToExport = issueLogs.filter(l => l.issueDate.substring(0, 7) <= selectedMonth);
+                inventoryToExport = [...inventory];
+            } else {
+                logsToExport = issueLogs.filter(l => l.issueDate.substring(0, 7) <= selectedMonth && !l.exported);
+                inventoryToExport = inventory.filter(i => !i.exported);
+            }
+
+            if(logsToExport.length === 0 && inventoryToExport.length === 0 && borrowedTransfers.length === 0) {
+                alert("No new or matching data available for the selected criteria!");
+                return;
+            }
+
+            const now = new Date();
+            const generatedAt = now.toLocaleString();
+            
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const mins = String(now.getMinutes()).padStart(2, '0');
+            const dailyTimestamp = `${year}-${month}-${day}_${hours}-${mins}`;
+
+            let csv = `========================================================================================================\n`;
+            csv += `                               EQUIPMENT & ASSET MANAGEMENT REPORT                                      \n`;
+            csv += `========================================================================================================\n`;
+            csv += `Report Month : ${selectedMonth}\n`;
+            csv += `Generated On : ${generatedAt}\n`;
+            csv += `Data Scope   : ${scope === 'ALL' ? 'ALL HISTORICAL RECORDS' : 'ONLY NEW / UN-DOWNLOADED DATA'}\n`;
+            csv += `========================================================================================================\n\n`;
+
+            // PART 1
+            csv += `--------------------------------------------------------------------------------------------------------\n`;
+            csv += `PART 1: MASTER STOCK INVENTORY & SET INTEGRITY\n`;
+            csv += `--------------------------------------------------------------------------------------------------------\n`;
+            csv += `"ITEM TYPE","SERIAL / ID","ITEM NAME","SET INTEGRITY STATUS","BOX ACCESSORIES (CURRENT SET)","QUANTITY","INITIAL CONDITION","PROBLEM DETAILS","CURRENT STATUS"\n`;
+            
+            if (inventoryToExport.length === 0) {
+                csv += `"No inventory items recorded."\n`;
+            } else {
+                inventoryToExport.forEach(i => {
+                    let isIncomplete = false;
+                    let missingMsg = "COMPLETE SET";
+                    if(i.boxItems) {
+                        i.boxItems.forEach(b => {
+                            if(b.originalQty && b.qty < b.originalQty) {
+                                isIncomplete = true;
+                                missingMsg = `INCOMPLETE (Missing ${b.originalQty - b.qty} x ${b.name})`;
+                            }
+                        });
+                    }
+
+                    const boxStr = i.boxItems ? i.boxItems.map(b => `${b.name}(x${b.qty})`).join('; ') : 'None';
+                    csv += `"${i.type}","${i.serial}","${i.name}","${missingMsg}","${boxStr}","${i.quantity}","${i.condition}","${i.problems || 'None'}","${i.isIssued ? 'ISSUED' : 'AVAILABLE'}"\n`;
+                    i.exported = true;
+                });
+            }
+            csv += `\n\n`;
+
+            // INTER-SET TRANSFERS SECTION
+            csv += `--------------------------------------------------------------------------------------------------------\n`;
+            csv += `PART 1.5: INTER-SET BORROWED / TRANSFERRED ACCESSORIES\n`;
+            csv += `--------------------------------------------------------------------------------------------------------\n`;
+            csv += `"TRANSFER DATE","ACCESSORY ITEM","QTY","SOURCE SET","DESTINATION SET","REASON","STATUS"\n`;
+            if(borrowedTransfers.length === 0) {
+                csv += `"No inter-set transfers recorded."\n`;
+            } else {
+                borrowedTransfers.forEach(t => {
+                    csv += `"${t.date}","${t.itemName}","${t.qty}","${t.sourceName} (${t.sourceSerial})","${t.destName} (${t.destSerial})","${t.reason}","${t.active ? 'OUTSTANDING BORROWED' : 'RETURNED TO ORIGINAL SET'}"\n`;
+                });
+            }
+            csv += `\n\n`;
+
+            // PART 2.1
+            const pendingLogsToExport = logsToExport.filter(l => l.active === true);
+            csv += `--------------------------------------------------------------------------------------------------------\n`;
+            csv += `PART 2.1: RETURN PENDING / CURRENTLY ISSUED ITEMS\n`;
+            csv += `--------------------------------------------------------------------------------------------------------\n`;
+            csv += `"ISSUE GROUP ID","ISSUE DATE","PROJECT ID","TEAM LEADER","RECEIVER PERSON","TEAM MEMBERS","ITEM NAME","SERIAL / REF","INCLUDED BOX ACCESSORIES","ISSUE CONDITION","ISSUE PROBLEMS","REMARKS"\n`;
+            
+            if (pendingLogsToExport.length === 0) {
+                csv += `"No pending issued items."\n`;
+            } else {
+                pendingLogsToExport.forEach(l => {
+                    const membersStr = l.members ? l.members.join('; ') : 'None';
+                    const boxStr = l.boxItems ? l.boxItems.map(b => `${b.name}(x${b.qty})`).join('; ') : 'None';
+                    csv += `"${l.groupId || 'N/A'}","${l.issueDate}","${l.projectId || 'N/A'}","${l.leader}","${l.receiver || ''}","${membersStr}","${l.name}","${l.serial}","${boxStr}","${l.issueCondition}","${l.issueProblems || 'None'}","${l.remarks || ''}"\n`;
+                    l.exported = true;
+                });
+            }
+            csv += `\n\n`;
+
+            // PART 2.2
+            const historyLogsToExport = logsToExport.filter(l => l.active === false);
+            csv += `--------------------------------------------------------------------------------------------------------\n`;
+            csv += `PART 2.2: RETURNED & INCIDENT HISTORY LOGS\n`;
+            csv += `--------------------------------------------------------------------------------------------------------\n`;
+            csv += `"ISSUE GROUP ID","LOG TYPE","ISSUE DATE","RETURN DATE","PROJECT ID","TEAM LEADER","RECEIVER PERSON","RETURNED BY","MISMATCH REASON","TEAM MEMBERS","ITEM NAME","SERIAL / REF","INCLUDED BOX ACCESSORIES","RETURN CONDITION","RETURN PROBLEMS / INCIDENT DETAILS","FINE / COMP AMOUNT","REMARKS"\n`;
+            
+            if (historyLogsToExport.length === 0) {
+                csv += `"No returned or incident history logs recorded."\n`;
+            } else {
+                historyLogsToExport.forEach(l => {
+                    const membersStr = l.members ? l.members.join('; ') : 'None';
+                    const boxStr = l.boxItems ? l.boxItems.map(b => `${b.name}(x${b.qty})`).join('; ') : 'None';
+                    csv += `"${l.groupId || 'N/A'}","${l.type || 'ISSUE'}","${l.issueDate}","${l.returnDate || 'N/A'}","${l.projectId || 'N/A'}","${l.leader}","${l.receiver || ''}","${l.returner || ''}","${l.mismatchReason || 'N/A'}","${membersStr}","${l.name}","${l.serial}","${boxStr}","${l.returnCondition || 'N/A'}","${l.returnProblems || l.issueProblems || 'N/A'}","${l.fineAmount || 'N/A'}","${l.remarks || ''}"\n`;
+                    l.exported = true;
+                });
+            }
+            csv += `\n\n`;
+
+            // PART 3
+            csv += `--------------------------------------------------------------------------------------------------------\n`;
+            csv += `PART 3: LIVE STOCK SUMMARY (AUTO CALCULATED)\n`;
+            csv += `--------------------------------------------------------------------------------------------------------\n`;
+            csv += `"ITEM NAME","CATEGORY TYPE","TOTAL QUANTITY","AVAILABLE STOCK","ISSUED / OUT OF STOCK"\n`;
+
+            const summary = {};
+            inventoryToExport.forEach(item => {
+                if(!summary[item.name]) summary[item.name] = { total: 0, available: 0, type: item.type };
+                
+                if(item.type === 'EQUIPMENT') {
+                    summary[item.name].total += 1;
+                    if(!item.isIssued) summary[item.name].available += 1;
+                } else {
+                    summary[item.name].total += item.quantity;
+                    summary[item.name].available += item.quantity;
+                }
+            });
+
+            const summaryKeys = Object.keys(summary);
+            if (summaryKeys.length === 0) {
+                csv += `"No inventory summary available."\n`;
+            } else {
+                summaryKeys.forEach(name => {
+                    const total = summary[name].total;
+                    const avail = summary[name].available;
+                    const issued = total - avail;
+                    csv += `"${name}","${summary[name].type}","${total}","${avail}","${issued}"\n`;
+                });
+            }
+            csv += `\n=================================== END OF REPORT ===================================\n`;
+
+            localStorage.setItem('eq_v10_inventory', JSON.stringify(inventory));
+            localStorage.setItem('eq_v10_logs', JSON.stringify(issueLogs));
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            
+            a.setAttribute('download', `Asset_Backup_${dailyTimestamp}.csv`);
+            a.click();
+
+            exportModalObj.hide();
+
+            if(pendingReset) {
+                setTimeout(() => {
+                    if(confirm("CSV Backup Report Downloaded!\n\nClear all Part 2 Logs now?")) {
+                        issueLogs = [];
+                        borrowedTransfers = [];
+                        saveData();
+                        alert("Part 2 Movement Logs & Inter-set Transfers have been reset!");
+                    }
+                    pendingReset = false;
+                }, 800);
+            }
+        }
+
+        renderAll();
+    </script>
+</body>
+</html>

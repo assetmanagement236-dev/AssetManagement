@@ -747,10 +747,78 @@ function issueEquipment(e) {
 }
 
 // --- REPORT LOST ITEM ---
+function toggleLostTypeFields() {
+  const targetType = document.getElementById("l_target_type").value;
+  const boxItemDiv = document.getElementById("lost_box_item_div");
+  const boxQtyDiv = document.getElementById("lost_box_qty_div");
+
+  if (targetType === "BOX_ITEM") {
+    boxItemDiv.classList.remove("d-none");
+    boxQtyDiv.classList.remove("d-none");
+  } else {
+    boxItemDiv.classList.add("d-none");
+    boxQtyDiv.classList.add("d-none");
+  }
+}
+
+function updateLostSerialDropdown() {
+  const selectedName = document.getElementById("l_name").value;
+  const serialSelect = document.getElementById("l_serial");
+  serialSelect.innerHTML =
+    '<option value="">-- Select Serial / Ref --</option>';
+
+  if (!selectedName) return;
+
+  const list = inventory.filter((i) => i.name === selectedName);
+  list.forEach((i) => {
+    const opt = document.createElement("option");
+    if (i.type === "EQUIPMENT") {
+      opt.value = i.serial;
+      opt.textContent = `Serial: ${i.serial} ${i.isIssued ? "(Issued)" : "(In Stock)"}`;
+    } else {
+      opt.value = i.name;
+      opt.textContent = `Accessory Stock (${i.quantity} available)`;
+    }
+    serialSelect.appendChild(opt);
+  });
+
+  updateLostBoxItemsDropdown();
+}
+
+function updateLostBoxItemsDropdown() {
+  const targetType = document.getElementById("l_target_type").value;
+  if (targetType !== "BOX_ITEM") return;
+
+  const selectedName = document.getElementById("l_name").value;
+  const selectedSerial = document.getElementById("l_serial").value;
+  const boxItemSelect = document.getElementById("l_box_item");
+
+  boxItemSelect.innerHTML =
+    '<option value="">-- Select Box Accessory --</option>';
+
+  const item = inventory.find(
+    (i) => i.name === selectedName && i.serial === selectedSerial,
+  );
+  if (item && item.boxItems && item.boxItems.length > 0) {
+    item.boxItems.forEach((b, idx) => {
+      if (b.qty > 0) {
+        const opt = document.createElement("option");
+        opt.value = idx;
+        opt.textContent = `${b.name} (Qty in set: ${b.qty})`;
+        boxItemSelect.appendChild(opt);
+      }
+    });
+  } else {
+    boxItemSelect.innerHTML =
+      '<option value="">No box accessories in this set!</option>';
+  }
+}
+
 function reportLostEquipment(e) {
   e.preventDefault();
   const date = document.getElementById("l_date").value;
   const person = document.getElementById("l_person").value.trim();
+  const targetType = document.getElementById("l_target_type").value;
   const name = document.getElementById("l_name").value;
   const serial = document.getElementById("l_serial").value;
   const incident = document.getElementById("l_incident").value.trim();
@@ -764,51 +832,115 @@ function reportLostEquipment(e) {
   );
 
   if (itemIndex === -1) {
-    alert("Item not found!");
+    alert("Item not found in inventory!");
     return;
   }
 
   const item = inventory[itemIndex];
 
-  if (!confirm(`Are you sure you want to report ${name} as LOST?`)) return;
+  if (targetType === "BOX_ITEM") {
+    const boxItemIdx = parseInt(document.getElementById("l_box_item").value);
+    const lostQty = parseInt(document.getElementById("l_qty").value) || 1;
 
-  if (item.type === "EQUIPMENT") {
-    inventory.splice(itemIndex, 1);
+    if (isNaN(boxItemIdx) || !item.boxItems || !item.boxItems[boxItemIdx]) {
+      alert("Please select a valid box accessory component that was lost!");
+      return;
+    }
+
+    const boxComp = item.boxItems[boxItemIdx];
+    if (lostQty > boxComp.qty) {
+      alert(
+        `Cannot report ${lostQty} lost. Only ${boxComp.qty} present in this set!`,
+      );
+      return;
+    }
+
+    if (
+      !confirm(
+        `Are you sure you want to report ${lostQty} x ${boxComp.name} as LOST from set ${name} (${serial})?`,
+      )
+    )
+      return;
+
+    boxComp.qty -= lostQty;
+
+    issueLogs.unshift({
+      id: Date.now(),
+      groupId: "LOST-ACC-" + Date.now(),
+      type: "LOST_PART",
+      itemType: "BOX_ITEM",
+      issueDate: date,
+      returnDate: "N/A",
+      leader: person,
+      receiver: person,
+      returner: "N/A",
+      mismatchReason: "",
+      projectId: "INCIDENT REPORT",
+      members: [],
+      name: `${name} -> [Lost ${boxComp.name}]`,
+      serial: serial,
+      boxItems: [{ name: boxComp.name, qty: lostQty }],
+      issueCondition: "LOST",
+      issueProblems: `Lost Accessory: ${boxComp.name} (x${lostQty}) | Incident: ${incident} | FIR: ${fir} | Action: ${recovery}`,
+      returnCondition: "LOST",
+      returnProblems: "ACCESSORY MISSING",
+      remarks: incident,
+      fineAmount: fineAmount,
+      active: false,
+      exported: false,
+    });
+
+    alert(
+      `✅ Lost accessory report submitted. ${lostQty} x ${boxComp.name} deducted from equipment set.`,
+    );
   } else {
-    item.quantity -= 1;
-    if (item.quantity <= 0) inventory.splice(itemIndex, 1);
-  }
+    if (
+      !confirm(
+        `Are you sure you want to report entire ${name} (${serial}) as LOST?`,
+      )
+    )
+      return;
 
-  issueLogs.unshift({
-    id: Date.now(),
-    groupId: "LOST-" + Date.now(),
-    type: "LOST",
-    itemType: item.type,
-    issueDate: date,
-    returnDate: "N/A",
-    leader: person,
-    receiver: person,
-    returner: "N/A",
-    mismatchReason: "",
-    projectId: "LOST INCIDENT",
-    members: [],
-    name: name,
-    serial: serial,
-    boxItems: item.boxItems ? JSON.parse(JSON.stringify(item.boxItems)) : [],
-    issueCondition: "LOST",
-    issueProblems: `Incident: ${incident} | FIR: ${fir} | Recovery: ${recovery}`,
-    returnCondition: "LOST",
-    returnProblems: "ITEM MISSING",
-    remarks: incident,
-    fineAmount: fineAmount,
-    active: false,
-    exported: false,
-  });
+    if (item.type === "EQUIPMENT") {
+      inventory.splice(itemIndex, 1);
+    } else {
+      item.quantity -= 1;
+      if (item.quantity <= 0) inventory.splice(itemIndex, 1);
+    }
+
+    issueLogs.unshift({
+      id: Date.now(),
+      groupId: "LOST-" + Date.now(),
+      type: "LOST",
+      itemType: item.type,
+      issueDate: date,
+      returnDate: "N/A",
+      leader: person,
+      receiver: person,
+      returner: "N/A",
+      mismatchReason: "",
+      projectId: "LOST INCIDENT",
+      members: [],
+      name: name,
+      serial: serial,
+      boxItems: item.boxItems ? JSON.parse(JSON.stringify(item.boxItems)) : [],
+      issueCondition: "LOST",
+      issueProblems: `Incident: ${incident} | FIR: ${fir} | Action: ${recovery}`,
+      returnCondition: "LOST",
+      returnProblems: "ITEM MISSING",
+      remarks: incident,
+      fineAmount: fineAmount,
+      active: false,
+      exported: false,
+    });
+
+    alert("Full item lost report submitted! Item removed from master stock.");
+  }
 
   document.getElementById("lostForm").reset();
   document.getElementById("l_date").valueAsDate = new Date();
+  toggleLostTypeFields();
   saveData();
-  alert("Lost report submitted successfully!");
 }
 
 // --- RETURN SINGLE ITEM MODAL LOGIC ---
@@ -858,12 +990,11 @@ function openReturnModal(logId) {
 }
 
 function checkPersonMismatch() {
-  const returnerVal = document.getElementById("r_returner").value.trim();
+  const returner = document.getElementById("r_returner").value.trim();
   const mismatchDiv = document.getElementById("mismatch_reason_div");
-
   if (
-    returnerVal.toLowerCase() !== originalReceiver.toLowerCase() &&
-    returnerVal !== ""
+    returner.toLowerCase() !== originalReceiver.toLowerCase() &&
+    returner !== ""
   ) {
     mismatchDiv.classList.remove("d-none");
   } else {
@@ -985,22 +1116,44 @@ function renderSummaryTable() {
   tbody.innerHTML = "";
 
   const summary = {};
+  let totalUnits = 0;
+  let totalAvail = 0;
+  let totalIssued = 0;
+
   inventory.forEach((item) => {
     if (!summary[item.name])
       summary[item.name] = { total: 0, available: 0, type: item.type };
 
     if (item.type === "EQUIPMENT") {
       summary[item.name].total += 1;
-      if (!item.isIssued) summary[item.name].available += 1;
+      totalUnits += 1;
+      if (!item.isIssued) {
+        summary[item.name].available += 1;
+        totalAvail += 1;
+      } else {
+        totalIssued += 1;
+      }
     } else {
       summary[item.name].total += item.quantity;
       summary[item.name].available += item.quantity;
+      totalUnits += item.quantity;
+      totalAvail += item.quantity;
     }
   });
 
   const keys = Object.keys(summary);
   document.getElementById("totalEquipmentTypes").innerText =
     `${keys.length} Items`;
+
+  const statTypes = document.getElementById("stat_total_types");
+  const statUnits = document.getElementById("stat_total_units");
+  const statAvail = document.getElementById("stat_avail_units");
+  const statIssued = document.getElementById("stat_issued_units");
+
+  if (statTypes) statTypes.innerText = keys.length;
+  if (statUnits) statUnits.innerText = totalUnits;
+  if (statAvail) statAvail.innerText = totalAvail;
+  if (statIssued) statIssued.innerText = totalIssued;
 
   if (keys.length === 0) {
     tbody.innerHTML =
