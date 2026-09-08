@@ -343,13 +343,6 @@
           if (backdrop) {
             backdrop.classList.toggle("hidden");
           }
-
-          // Prevent background scrolling on mobile when sidebar is open
-          if (sidebar && !sidebar.classList.contains("-translate-x-full")) {
-            document.body.classList.add("overflow-hidden");
-          } else {
-            document.body.classList.remove("overflow-hidden");
-          }
         }
       </script>
 
