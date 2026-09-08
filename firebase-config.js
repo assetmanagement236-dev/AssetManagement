@@ -87,6 +87,12 @@ function initFirebase() {
           inventory = [];
           issueLogs = [];
           borrowedTransfers = [];
+
+          if (typeof customSuggestions !== "undefined") customSuggestions = [];
+          if (typeof currentTeamMembers !== "undefined")
+            currentTeamMembers = [];
+          if (typeof currentBoxItems !== "undefined") currentBoxItems = [];
+
           unsubscribeAll();
           if (typeof renderAll === "function") {
             renderAll();
