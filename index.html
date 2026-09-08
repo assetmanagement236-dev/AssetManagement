@@ -105,38 +105,38 @@
 
 <!-- TopNavBar -->
 <nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-8 h-16 bg-background border-b border-surface-border shadow-sm">
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-3 shrink-0">
         <span class="material-symbols-outlined text-primary text-3xl">inventory_2</span>
-        <span class="text-xl md:text-2xl font-bold text-primary tracking-tight">Kinetic Asset Intelligence</span>
+        <span class="text-lg md:text-2xl font-bold text-primary tracking-tight whitespace-nowrap">Kinetic Asset Intelligence</span>
     </div>
     
-    <div class="flex items-center gap-2 md:gap-3 flex-wrap">
+    <div class="flex items-center gap-2 md:gap-3 flex-nowrap overflow-x-auto py-1">
         <!-- Firebase Status Badge -->
-        <span id="firebaseStatusBadge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-surface-container-low text-text-secondary border border-surface-border cursor-pointer hover:bg-surface-border transition-colors" onclick="openFirebaseModal()">
+        <span id="firebaseStatusBadge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-surface-container-low text-text-secondary border border-surface-border cursor-pointer hover:bg-surface-border transition-colors whitespace-nowrap" onclick="openFirebaseModal()">
             <span class="w-2 h-2 rounded-full bg-status-warning block"></span> Local Mode
         </span>
 
-        <button id="pwaInstallBtn" class="hidden md:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-status-success text-status-success hover:bg-status-success hover:text-white transition-colors text-xs font-semibold" onclick="installPWA()">
+        <button id="pwaInstallBtn" class="hidden md:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-status-success text-status-success hover:bg-status-success hover:text-white transition-colors text-xs font-semibold whitespace-nowrap" onclick="installPWA()">
             <span class="material-symbols-outlined text-sm">install_mobile</span> Install App
         </button>
 
-        <button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-surface-border text-text-secondary hover:text-primary hover:bg-surface-container-low transition-colors text-xs font-semibold" onclick="openFirebaseModal()">
+        <button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-surface-border text-text-secondary hover:text-primary hover:bg-surface-container-low transition-colors text-xs font-semibold whitespace-nowrap" onclick="openFirebaseModal()">
             <span class="material-symbols-outlined text-sm">cloud_upload</span> Firebase Connect
         </button>
 
-        <button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-surface-border text-text-secondary hover:text-primary hover:bg-surface-container-low transition-colors text-xs font-semibold" onclick="openExportModal()">
+        <button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-surface-border text-text-secondary hover:text-primary hover:bg-surface-container-low transition-colors text-xs font-semibold whitespace-nowrap" onclick="openExportModal()">
             <span class="material-symbols-outlined text-sm">table_chart</span> Export CSV
         </button>
 
-        <button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-status-alert/30 text-status-alert hover:bg-status-alert hover:text-white transition-colors text-xs font-semibold" onclick="triggerResetWorkflow()">
+        <button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-status-alert/30 text-status-alert hover:bg-status-alert hover:text-white transition-colors text-xs font-semibold whitespace-nowrap" onclick="triggerResetWorkflow()">
             <span class="material-symbols-outlined text-sm">restart_alt</span> Reset Logs
         </button>
 
-        <button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container-low text-text-secondary hover:text-primary transition-colors" title="Sync Data" onclick="location.reload()">
+        <button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container-low text-text-secondary hover:text-primary transition-colors shrink-0" title="Sync Data" onclick="location.reload()">
             <span class="material-symbols-outlined text-xl">sync</span>
         </button>
 
-        <div class="w-8 h-8 rounded-full overflow-hidden border border-surface-border">
+        <div class="w-8 h-8 rounded-full overflow-hidden border border-surface-border shrink-0">
             <img alt="User Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_nT8ws0may6hlhqyLdl_3FX4So4P7RrrI95G0xgMsQt57N2S6CZ9gOoTMn-yBV5GDoYJKTxDc84SlxdzFDxgfCxQSLxGLxdT6oew8nOa875OSMj3sFHFZ_AapfTDPULm1Kx_AHdnnUdqKLftxJ2cnQDck7ZelF7Z5O_H3ktwUIr0UPLXEV0ORPG0jxlEVTKyc2dysA1ETe6UInCni880xpq3xTgEqNGY4BC9scTIrAWm4Qm-zWYmpX59IIkDwAn710j6sy0o-tr0a"/>
         </div>
     </div>
@@ -191,7 +191,7 @@
 </aside>
 
 <!-- Main Content Canvas -->
-<main class="md:ml-64 pt-16 min-h-screen p-4 md:p-8 bg-surface">
+<main class="md:ml-64 pt-20 md:pt-24 min-h-screen p-4 md:p-8 bg-surface">
     <!-- Header -->
     <header class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
