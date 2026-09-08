@@ -66,10 +66,16 @@ function initFirebase() {
           console.log("🔒 Authenticated as UID:", currentUserUID);
           updateFirebaseStatusUI(true, "Cloud Synced");
 
-          document
-            .getElementById("appMasterContainer")
-            .classList.remove("hidden");
-          document.getElementById("firebaseAuthScreen").classList.add("hidden");
+          let masterCont = document.getElementById("appMasterContainer");
+          if (masterCont) {
+            masterCont.style.display = "";
+            masterCont.classList.remove("hidden");
+          }
+          let authScreen = document.getElementById("firebaseAuthScreen");
+          if (authScreen) {
+            authScreen.style.display = "none";
+            authScreen.classList.add("hidden");
+          }
 
           if (document.getElementById("activeUserEmail")) {
             document.getElementById("activeUserEmail").textContent = user.email;
@@ -84,10 +90,16 @@ function initFirebase() {
           currentUserUID = null;
           updateFirebaseStatusUI(false, "Logged Out");
 
-          document.getElementById("appMasterContainer").classList.add("hidden");
-          document
-            .getElementById("firebaseAuthScreen")
-            .classList.remove("hidden");
+          let masterCont = document.getElementById("appMasterContainer");
+          if (masterCont) {
+            masterCont.style.display = "none";
+            masterCont.classList.add("hidden");
+          }
+          let authScreen = document.getElementById("firebaseAuthScreen");
+          if (authScreen) {
+            authScreen.style.display = "";
+            authScreen.classList.remove("hidden");
+          }
 
           // Clear active user session details securely
           inventory = [];
