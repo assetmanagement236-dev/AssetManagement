@@ -65,6 +65,10 @@ function initFirebase() {
           currentUserUID = user.uid;
           console.log("🔒 Authenticated as UID:", currentUserUID);
           updateFirebaseStatusUI(true, "Cloud Synced");
+
+          document
+            .getElementById("appMasterContainer")
+            .classList.remove("hidden");
           document.getElementById("firebaseAuthScreen").classList.add("hidden");
 
           if (document.getElementById("activeUserEmail")) {
@@ -79,6 +83,8 @@ function initFirebase() {
           console.log("🔓 User is signed out");
           currentUserUID = null;
           updateFirebaseStatusUI(false, "Logged Out");
+
+          document.getElementById("appMasterContainer").classList.add("hidden");
           document
             .getElementById("firebaseAuthScreen")
             .classList.remove("hidden");
