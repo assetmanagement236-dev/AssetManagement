@@ -1,4 +1,4 @@
-const CACHE_NAME = "asset-manager-v17";
+const CACHE_NAME = "asset-manager-v18";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",

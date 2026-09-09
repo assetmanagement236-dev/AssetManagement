@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
   --bg-color: #ffffff;
@@ -16,6 +16,7 @@
 body {
   background-color: var(--bg-color);
   font-family:
+    "Inter",
     "Geist",
     -apple-system,
     BlinkMacSystemFont,
@@ -25,6 +26,11 @@ body {
   color: var(--text-primary);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6, .font-geist {
+  font-family: "Geist", sans-serif;
+  letter-spacing: -0.01em;
 }
 
 .material-symbols-outlined {
@@ -73,31 +79,31 @@ body {
 }
 
 .badge-available {
-  background-color: #ffffff;
+  background-color: #ecfdf5;
   color: var(--status-success);
   border: 1px solid var(--status-success);
 }
 
 .badge-issued {
-  background-color: #ffffff;
+  background-color: #eff6ff;
   color: var(--primary-color);
   border: 1px solid var(--primary-color);
 }
 
 .badge-lost {
-  background-color: #ffffff;
+  background-color: #fef2f2;
   color: var(--status-alert);
   border: 1px solid var(--status-alert);
 }
 
 .badge-accessory {
-  background-color: #ffffff;
+  background-color: #fffbeb;
   color: var(--status-warning);
   border: 1px solid var(--status-warning);
 }
 
 .badge-incomplete {
-  background-color: #ffffff;
+  background-color: #fef2f2;
   color: var(--status-alert);
   border: 1px solid var(--status-alert);
   font-weight: bold;
@@ -346,7 +352,7 @@ main {
   input,
   select,
   textarea {
-    font-size: 14px !important; /* Prevents auto-zoom on mobile safari/chrome */
+    font-size: 14px !important;
   }
   .modal-dialog {
     margin: 0.5rem;
