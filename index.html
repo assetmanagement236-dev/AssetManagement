@@ -374,192 +374,196 @@
         </div>
       </div>
 
-      <!-- Main Content Bento Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6" id="master-section">
-        <!-- LEFT PANEL: Master Entry Form & Inventory Tables (5 Columns) -->
-        <div class="lg:col-span-5 flex flex-col gap-6">
-          <!-- Master Entry Form Card -->
-          <div class="bg-background border border-surface-border rounded-xl shadow-sm overflow-hidden">
-            <div
-              class="px-3 py-3 md:px-5 md:py-3.5 border-b border-surface-border bg-surface flex items-center justify-between">
-              <h2 class="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary text-lg">add_box</span>
-                1. Add Master Equipment / Accessory
-              </h2>
-            </div>
-            <div class="p-3 md:p-5">
-              <form id="masterForm" onsubmit="addMasterItem(event)">
-                <div class="mb-3">
-                  <label class="block text-xs font-bold text-text-primary mb-1.5">Item Category / Type</label>
-                  <select id="m_type"
-                    class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
-                    onchange="toggleItemTypeFields()" required>
-                    <option value="EQUIPMENT">
-                      Main Equipment (With Serial No.)
-                    </option>
-                    <option value="ACCESSORY">
-                      Loose Accessory / Consumable (Quantity Only)
-                    </option>
-                  </select>
-                </div>
-
-                <div class="mb-3 relative">
-                  <label class="block text-xs font-bold text-text-primary mb-1.5">Item Name</label>
-                  <div class="flex gap-1.5">
-                    <input type="text" id="m_name"
-                      class="flex-1 px-3 py-2 border border-surface-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
-                      placeholder="Type or search item name..." autocomplete="off" onkeyup="filterSuggestions()"
-                      onfocus="filterSuggestions()" required />
-                    <button
-                      class="px-3 py-2 border border-surface-border rounded-lg text-text-secondary hover:bg-surface-container-low transition-colors"
-                      type="button" onclick="openManageSuggestionsModal()" title="Manage Saved Suggestions">
-                      <span class="material-symbols-outlined text-base">settings</span>
-                    </button>
-                  </div>
-                  <div id="custom_suggestion_box" class="suggestion-box d-none"></div>
-                </div>
-
-                <!-- EQUIPMENT FIELDS -->
-                <div id="equipment_fields">
+      <!-- Main Content Full-Width Responsive Container -->
+      <div class="flex flex-col gap-8 w-full max-w-7xl mx-auto">
+        <!-- SECTION 1: MASTER INVENTORY (FULL WIDTH) -->
+        <div class="flex flex-col gap-6 w-full" id="master-section">
+          <!-- Top Row: Add Form (7 cols) + Stock Summary (5 cols) on Desktop -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <!-- Master Entry Form Card -->
+            <div class="bg-background border border-surface-border rounded-xl shadow-sm overflow-hidden">
+              <div
+                class="px-3 py-3 md:px-5 md:py-3.5 border-b border-surface-border bg-surface flex items-center justify-between">
+                <h2 class="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary text-lg">add_box</span>
+                  1. Add Master Equipment / Accessory
+                </h2>
+              </div>
+              <div class="p-3 md:p-5">
+                <form id="masterForm" onsubmit="addMasterItem(event)">
                   <div class="mb-3">
-                    <label class="block text-xs font-bold text-text-primary mb-1.5">Model Number
-                      <span class="text-text-secondary font-normal">(Optional)</span></label>
-                    <input type="text" id="m_model"
+                    <label class="block text-xs font-bold text-text-primary mb-1.5">Item Category / Type</label>
+                    <select id="m_type"
                       class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
-                      placeholder="e.g. M35, Trimble-R10" />
-                  </div>
-
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                    <div>
-                      <label class="block text-xs font-bold text-text-primary mb-1.5">Office Serial Number
-                        <span class="text-text-secondary font-normal">(Optional)</span></label>
-                      <input type="text" id="m_serial"
-                        class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm font-mono-data bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
-                        placeholder="e.g. TS-101, LP-202" />
-                    </div>
-                    <div>
-                      <label class="block text-xs font-bold text-text-primary mb-1.5">Equipment Serial Number
-                        <span class="text-text-secondary font-normal">(Optional)</span></label>
-                      <input type="text" id="m_eq_serial"
-                        class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm font-mono-data bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
-                        placeholder="e.g. SN-8839201" />
-                    </div>
-                  </div>
-                  <small class="text-[11px] text-text-secondary mb-3 block">* Model or Serial numbers are optional for
-                    master
-                    entry</small>
-
-                  <!-- BOX ACCESSORIES INCLUSION (SET) -->
-                  <div
-                    class="mb-3 p-3 bg-surface border border-dashed border-surface-border rounded-xl overflow-hidden">
-                    <label class="block text-xs font-bold text-primary mb-1 flex items-center gap-1">
-                      <span class="material-symbols-outlined text-base">inventory_2</span>
-                      Equipment Box Items / Set Components
-                    </label>
-                    <small class="text-xs text-text-secondary block mb-2">Enter accessories inside box set (e.g.
-                      Battery, Lens,
-                      Charger)</small>
-
-                    <div class="flex items-center gap-1.5 mb-2 w-full overflow-hidden">
-                      <input type="text" id="box_item_name"
-                        class="flex-1 min-w-0 px-2.5 py-1.5 border border-surface-border rounded-lg text-xs bg-background outline-none focus:border-primary"
-                        placeholder="Box Item (e.g. Battery)" />
-                      <input type="number" id="box_item_qty"
-                        class="w-14 shrink-0 px-2 py-1.5 border border-surface-border rounded-lg text-xs bg-background outline-none focus:border-primary text-center"
-                        min="1" value="1" placeholder="Qty" />
-                      <button
-                        class="px-3 py-1.5 bg-primary text-on-primary rounded-lg text-xs font-semibold hover:bg-surface-tint transition-colors shrink-0 flex items-center justify-center gap-0.5"
-                        type="button" onclick="addBoxItem()">
-                        <span class="material-symbols-outlined text-sm block">add</span>
-                      </button>
-                    </div>
-                    <div id="box_items_container" class="mt-2 flex flex-wrap gap-1.5">
-                      <small class="text-xs text-text-secondary" id="empty_box_text">No box items added to set
-                        yet.</small>
-                    </div>
-                  </div>
-
-                  <div class="mb-3">
-                    <label class="block text-xs font-bold text-text-primary mb-1.5">Initial Equipment Condition</label>
-                    <select id="m_condition"
-                      class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none">
-                      <option value="Good">Good (Working fine)</option>
-                      <option value="Minor Fault">
-                        Minor Fault (Has minor issues)
+                      onchange="toggleItemTypeFields()" required>
+                      <option value="EQUIPMENT">
+                        Main Equipment (With Serial No.)
                       </option>
-                      <option value="Damaged">Damaged / Needs Repair</option>
+                      <option value="ACCESSORY">
+                        Loose Accessory / Consumable (Quantity Only)
+                      </option>
                     </select>
                   </div>
-                  <div class="mb-3">
-                    <label class="block text-xs font-bold text-text-primary mb-1.5">Problem / Condition Details (If
-                      any)</label>
-                    <textarea id="m_problems"
-                      class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
-                      rows="2" placeholder="Describe any existing defects..."></textarea>
-                  </div>
-                </div>
 
-                <!-- ACCESSORY FIELDS -->
-                <div id="accessory_fields" class="d-none">
-                  <div class="mb-3">
-                    <label class="block text-xs font-bold text-text-primary mb-1.5">Total Quantity</label>
-                    <input type="number" id="m_qty"
-                      class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
-                      min="1" placeholder="e.g. 5, 10, 50" />
+                  <div class="mb-3 relative">
+                    <label class="block text-xs font-bold text-text-primary mb-1.5">Item Name</label>
+                    <div class="flex gap-1.5">
+                      <input type="text" id="m_name"
+                        class="flex-1 px-3 py-2 border border-surface-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
+                        placeholder="Type or search item name..." autocomplete="off" onkeyup="filterSuggestions()"
+                        onfocus="filterSuggestions()" required />
+                      <button
+                        class="px-3 py-2 border border-surface-border rounded-lg text-text-secondary hover:bg-surface-container-low transition-colors"
+                        type="button" onclick="openManageSuggestionsModal()" title="Manage Saved Suggestions">
+                        <span class="material-symbols-outlined text-base">settings</span>
+                      </button>
+                    </div>
+                    <div id="custom_suggestion_box" class="suggestion-box d-none"></div>
                   </div>
-                </div>
 
-                <button type="submit"
-                  class="w-full py-2.5 bg-primary text-on-primary rounded-lg text-sm font-bold hover:bg-surface-tint transition-colors flex items-center justify-center gap-1.5 shadow-sm">
-                  <span class="material-symbols-outlined text-base">add_circle</span>
-                  Add to Master Inventory
-                </button>
-              </form>
+                  <!-- EQUIPMENT FIELDS -->
+                  <div id="equipment_fields">
+                    <div class="mb-3">
+                      <label class="block text-xs font-bold text-text-primary mb-1.5">Model Number
+                        <span class="text-text-secondary font-normal">(Optional)</span></label>
+                      <input type="text" id="m_model"
+                        class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
+                        placeholder="e.g. M35, Trimble-R10" />
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                      <div>
+                        <label class="block text-xs font-bold text-text-primary mb-1.5">Office Serial Number
+                          <span class="text-text-secondary font-normal">(Optional)</span></label>
+                        <input type="text" id="m_serial"
+                          class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm font-mono-data bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
+                          placeholder="e.g. TS-101, LP-202" />
+                      </div>
+                      <div>
+                        <label class="block text-xs font-bold text-text-primary mb-1.5">Equipment Serial Number
+                          <span class="text-text-secondary font-normal">(Optional)</span></label>
+                        <input type="text" id="m_eq_serial"
+                          class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm font-mono-data bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
+                          placeholder="e.g. SN-8839201" />
+                      </div>
+                    </div>
+                    <small class="text-[11px] text-text-secondary mb-3 block">* Model or Serial numbers are optional for
+                      master
+                      entry</small>
+
+                    <!-- BOX ACCESSORIES INCLUSION (SET) -->
+                    <div
+                      class="mb-3 p-3 bg-surface border border-dashed border-surface-border rounded-xl overflow-hidden">
+                      <label class="block text-xs font-bold text-primary mb-1 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-base">inventory_2</span>
+                        Equipment Box Items / Set Components
+                      </label>
+                      <small class="text-xs text-text-secondary block mb-2">Enter accessories inside box set (e.g.
+                        Battery, Lens,
+                        Charger)</small>
+
+                      <div class="flex items-center gap-1.5 mb-2 w-full overflow-hidden">
+                        <input type="text" id="box_item_name"
+                          class="flex-1 min-w-0 px-2.5 py-1.5 border border-surface-border rounded-lg text-xs bg-background outline-none focus:border-primary"
+                          placeholder="Box Item (e.g. Battery)" />
+                        <input type="number" id="box_item_qty"
+                          class="w-14 shrink-0 px-2 py-1.5 border border-surface-border rounded-lg text-xs bg-background outline-none focus:border-primary text-center"
+                          min="1" value="1" placeholder="Qty" />
+                        <button
+                          class="px-3 py-1.5 bg-primary text-on-primary rounded-lg text-xs font-semibold hover:bg-surface-tint transition-colors shrink-0 flex items-center justify-center gap-0.5"
+                          type="button" onclick="addBoxItem()">
+                          <span class="material-symbols-outlined text-sm block">add</span>
+                        </button>
+                      </div>
+                      <div id="box_items_container" class="mt-2 flex flex-wrap gap-1.5">
+                        <small class="text-xs text-text-secondary" id="empty_box_text">No box items added to set
+                          yet.</small>
+                      </div>
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="block text-xs font-bold text-text-primary mb-1.5">Initial Equipment
+                        Condition</label>
+                      <select id="m_condition"
+                        class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none">
+                        <option value="Good">Good (Working fine)</option>
+                        <option value="Minor Fault">
+                          Minor Fault (Has minor issues)
+                        </option>
+                        <option value="Damaged">Damaged / Needs Repair</option>
+                      </select>
+                    </div>
+                    <div class="mb-3">
+                      <label class="block text-xs font-bold text-text-primary mb-1.5">Problem / Condition Details (If
+                        any)</label>
+                      <textarea id="m_problems"
+                        class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
+                        rows="2" placeholder="Describe any existing defects..."></textarea>
+                    </div>
+                  </div>
+
+                  <!-- ACCESSORY FIELDS -->
+                  <div id="accessory_fields" class="d-none">
+                    <div class="mb-3">
+                      <label class="block text-xs font-bold text-text-primary mb-1.5">Total Quantity</label>
+                      <input type="number" id="m_qty"
+                        class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
+                        min="1" placeholder="e.g. 5, 10, 50" />
+                    </div>
+                  </div>
+
+                  <button type="submit"
+                    class="w-full py-2.5 bg-primary text-on-primary rounded-lg text-sm font-bold hover:bg-surface-tint transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+                    <span class="material-symbols-outlined text-base">add_circle</span>
+                    Add to Master Inventory
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Live Stock Summary Card -->
+            <div class="lg:col-span-5 bg-background border border-surface-border rounded-xl shadow-sm overflow-hidden">
+              <div
+                class="px-3 py-3 md:px-5 md:py-3.5 border-b border-surface-border bg-surface flex items-center justify-between">
+                <h2 class="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
+                  <span class="material-symbols-outlined text-status-success text-lg">pie_chart</span>
+                  Stock Summary
+                </h2>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-surface-container-high text-text-secondary"
+                  id="totalEquipmentTypes">0 Types</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse" id="summaryTable">
+                  <thead>
+                    <tr class="bg-surface border-b border-surface-border text-text-secondary uppercase font-bold">
+                      <th class="px-2 py-2 md:px-4 md:py-3">Item Name</th>
+                      <th class="px-2 py-2 md:px-4 md:py-3 text-center">Total Qty</th>
+                      <th class="px-2 py-2 md:px-4 md:py-3 text-center">Available Stock</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-surface-border"></tbody>
+                </table>
+              </div>
             </div>
           </div>
 
-          <!-- Live Stock Summary Card -->
-          <div class="bg-background border border-surface-border rounded-xl shadow-sm overflow-hidden mb-8">
-            <div
-              class="px-3 py-3 md:px-5 md:py-3.5 border-b border-surface-border bg-surface flex items-center justify-between">
-              <h2 class="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
-                <span class="material-symbols-outlined text-status-success text-lg">pie_chart</span>
-                Stock Summary
-              </h2>
-              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-surface-container-high text-text-secondary"
-                id="totalEquipmentTypes">0 Types</span>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="w-full text-left text-xs border-collapse" id="summaryTable">
-                <thead>
-                  <tr class="bg-surface border-b border-surface-border text-text-secondary uppercase font-bold">
-                    <th class="px-2 py-2 md:px-4 md:py-3">Item Name</th>
-                    <th class="px-2 py-2 md:px-4 md:py-3 text-center">Total Qty</th>
-                    <th class="px-2 py-2 md:px-4 md:py-3 text-center">Available Stock</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-surface-border"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Detailed Master Stock Table -->
-          <div class="bg-background border border-surface-border rounded-xl shadow-sm overflow-hidden mb-8 mt-8">
-            <div class="px-5 py-3.5 border-b border-surface-border bg-surface">
+          <!-- FULL WIDTH Detailed Master Stock Table Card -->
+          <div class="w-full bg-background border border-surface-border rounded-xl shadow-sm overflow-hidden">
+            <div class="px-5 py-3.5 border-b border-surface-border bg-surface flex items-center justify-between">
               <h2 class="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary text-lg">list_alt</span>
                 Master Stock Inventory & Integrity
               </h2>
             </div>
-            <div class="overflow-x-auto max-h-96">
+            <div class="overflow-x-auto w-full max-h-[500px]">
               <table class="w-full text-left text-xs border-collapse" id="masterTable">
                 <thead>
                   <tr class="bg-surface border-b border-surface-border text-text-secondary uppercase font-bold">
-                    <th class="px-2 py-2 md:px-4 md:py-3 whitespace-nowrap min-w-[140px]">Type / Serial</th>
-                    <th class="px-2 py-2 md:px-4 md:py-3 whitespace-nowrap min-w-[200px]">Item & Set Integrity</th>
-                    <th class="px-2 py-2 md:px-4 md:py-3 text-center whitespace-nowrap">Condition</th>
-                    <th class="px-2 py-2 md:px-4 md:py-3 text-center whitespace-nowrap">Status</th>
-                    <th class="px-2 py-2 md:px-4 md:py-3 text-right whitespace-nowrap">Action</th>
+                    <th class="px-4 py-3.5 whitespace-nowrap min-w-[150px]">Type / Serial</th>
+                    <th class="px-4 py-3.5 whitespace-nowrap min-w-[220px]">Item & Set Integrity</th>
+                    <th class="px-4 py-3.5 text-center whitespace-nowrap min-w-[120px]">Condition</th>
+                    <th class="px-4 py-3.5 text-center whitespace-nowrap min-w-[120px]">Status</th>
+                    <th class="px-4 py-3.5 text-right whitespace-nowrap min-w-[100px]">Action</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-surface-border"></tbody>
@@ -568,355 +572,359 @@
           </div>
         </div>
 
-        <!-- RIGHT PANEL: Issue, Inter-Set Transfer, Lost Item & Movement Logs (7 Columns) -->
-        <div class="lg:col-span-7 flex flex-col gap-6">
-          <!-- Operations Navigation Tabs (Scrollable on Mobile) -->
-          <div class="bg-background border border-surface-border rounded-xl shadow-sm p-1.5 overflow-hidden">
-            <ul
-              class="nav nav-tabs border-0 flex flex-nowrap overflow-x-auto gap-1.5 p-1 bg-surface-container-low rounded-lg no-scrollbar"
-              id="opTab" role="tablist">
-              <li class="nav-item shrink-0" role="presentation">
-                <button
-                  class="nav-link px-3.5 py-2 text-xs font-bold rounded-lg active flex items-center justify-center gap-1.5 whitespace-nowrap"
-                  id="issue-tab" data-bs-toggle="tab" data-bs-target="#issue-panel" type="button">
-                  <span class="material-symbols-outlined text-base">output</span>
-                  2. Issue Equipment
-                </button>
-              </li>
-              <li class="nav-item shrink-0" role="presentation">
-                <button
-                  class="nav-link px-3.5 py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 text-status-warning whitespace-nowrap"
-                  id="transfer-tab" data-bs-toggle="tab" data-bs-target="#transfer-panel" type="button">
-                  <span class="material-symbols-outlined text-base">move_down</span>
-                  3. Inter-Set Transfer
-                </button>
-              </li>
-              <li class="nav-item shrink-0" role="presentation">
-                <button
-                  class="nav-link px-3.5 py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 text-status-alert whitespace-nowrap"
-                  id="lost-tab" data-bs-toggle="tab" data-bs-target="#lost-panel" type="button">
-                  <span class="material-symbols-outlined text-base">report_problem</span>
-                  4. Report Lost
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          <div class="tab-content" id="opTabContent">
-            <!-- TAB 1: Multi-Item Issue Form -->
-            <div class="tab-pane fade show active" id="issue-panel" role="tabpanel">
-              <div class="bg-background border border-surface-border rounded-xl shadow-sm overflow-hidden">
-                <div class="px-5 py-3.5 border-b border-surface-border bg-surface">
-                  <h2 class="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
-                    <span class="material-symbols-outlined text-primary text-lg">output</span>
-                    Issue Equipment to Field Team
-                  </h2>
-                </div>
-                <div class="p-3 md:p-5">
-                  <form id="issueForm" onsubmit="issueEquipment(event)">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <label class="block text-xs font-bold text-text-primary mb-1.5">Issue Date</label>
-                        <input type="date" id="i_date"
-                          class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
-                          required />
-                      </div>
-                      <div>
-                        <label class="block text-xs font-bold text-text-primary mb-1.5">Team Leader / Issuer</label>
-                        <input type="text" id="i_leader"
-                          class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
-                          placeholder="Leader Full Name" required />
-                      </div>
-
-                      <div>
-                        <label class="block text-xs font-bold text-text-primary mb-1.5">Equipment Receiver
-                          Person</label>
-                        <input type="text" id="i_receiver"
-                          class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
-                          placeholder="Person receiving equipment" required />
-                      </div>
-                      <div>
-                        <label class="block text-xs font-bold text-text-primary mb-1.5">Project ID / Location</label>
-                        <input type="text" id="i_project_id"
-                          class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm font-mono-data bg-background outline-none"
-                          placeholder="e.g. PRJ-2026-01" required />
-                      </div>
-                    </div>
-
-                    <!-- Multiple Team Members Section -->
-                    <div class="mb-4">
-                      <label class="block text-xs font-bold text-text-primary mb-1.5">Team Members / Assistants
-                        (Multiple)</label>
-                      <div class="flex items-center gap-2 mb-2 w-full">
-                        <input type="text" id="member_input"
-                          class="flex-1 min-w-0 px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none focus:border-primary"
-                          placeholder="Enter member name and click Add" />
-                        <button
-                          class="px-3 py-2 border border-surface-border rounded-lg text-xs font-semibold hover:bg-surface-container-low transition-colors shrink-0 flex items-center gap-1"
-                          type="button" onclick="addTeamMember()">
-                          <span class="material-symbols-outlined text-sm">person_add</span>
-                          Add
-                        </button>
-                      </div>
-                      <div id="team_members_container"
-                        class="p-3 border border-surface-border rounded-lg bg-surface flex flex-wrap gap-1.5 min-h-[48px]">
-                        <small class="text-xs text-text-secondary" id="empty_member_text">No additional members added
-                          yet.</small>
-                      </div>
-                    </div>
-
-                    <!-- MULTI-ITEM SELECTION SECTION -->
-                    <div class="mb-4">
-                      <label class="block text-xs font-bold text-primary mb-2 flex items-center gap-1">
-                        <span class="material-symbols-outlined text-base">checklist</span>
-                        Select Items & Quantities to Issue
-                      </label>
-                      <div class="border border-surface-border rounded-lg p-3 bg-surface max-h-64 overflow-y-auto"
-                        id="multi_item_container">
-                        <!-- Dynamic Items Checkboxes -->
-                      </div>
-                    </div>
-
-                    <div class="mb-4">
-                      <label class="block text-xs font-bold text-text-primary mb-1.5">Remarks / Issue Purpose</label>
-                      <input type="text" id="i_remarks"
-                        class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
-                        placeholder="Additional purpose or site notes..." />
-                    </div>
-
-                    <button type="submit"
-                      class="w-full py-3 bg-primary text-on-primary rounded-lg text-sm font-bold hover:bg-surface-tint transition-colors flex items-center justify-center gap-2 shadow-sm">
-                      <span class="material-symbols-outlined text-lg">check_circle</span>
-                      Confirm & Issue Selected Items
-                    </button>
-                  </form>
-                </div>
-              </div>
+        <!-- SECTION 2: OPERATIONS (ISSUE, TRANSFER, LOST) -->
+        <div class="flex flex-col gap-6 w-full pt-6 border-t border-surface-border" id="operations-section">
+            <!-- Operations Navigation Tabs (Scrollable on Mobile) -->
+            <div class="bg-background border border-surface-border rounded-xl shadow-sm p-1.5 overflow-hidden">
+              <ul
+                class="nav nav-tabs border-0 flex flex-nowrap overflow-x-auto gap-1.5 p-1 bg-surface-container-low rounded-lg no-scrollbar"
+                id="opTab" role="tablist">
+                <li class="nav-item shrink-0" role="presentation">
+                  <button
+                    class="nav-link px-3.5 py-2 text-xs font-bold rounded-lg active flex items-center justify-center gap-1.5 whitespace-nowrap"
+                    id="issue-tab" data-bs-toggle="tab" data-bs-target="#issue-panel" type="button">
+                    <span class="material-symbols-outlined text-base">output</span>
+                    2. Issue Equipment
+                  </button>
+                </li>
+                <li class="nav-item shrink-0" role="presentation">
+                  <button
+                    class="nav-link px-3.5 py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 text-status-warning whitespace-nowrap"
+                    id="transfer-tab" data-bs-toggle="tab" data-bs-target="#transfer-panel" type="button">
+                    <span class="material-symbols-outlined text-base">move_down</span>
+                    3. Inter-Set Transfer
+                  </button>
+                </li>
+                <li class="nav-item shrink-0" role="presentation">
+                  <button
+                    class="nav-link px-3.5 py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 text-status-alert whitespace-nowrap"
+                    id="lost-tab" data-bs-toggle="tab" data-bs-target="#lost-panel" type="button">
+                    <span class="material-symbols-outlined text-base">report_problem</span>
+                    4. Report Lost
+                  </button>
+                </li>
+              </ul>
             </div>
 
-            <!-- TAB 2: Inter-Set Accessory Borrow / Transfer Form -->
-            <div class="tab-pane fade" id="transfer-panel" role="tabpanel">
-              <div class="bg-background border border-status-warning/30 rounded-xl shadow-sm overflow-hidden">
-                <div class="px-5 py-3.5 border-b border-status-warning/20 bg-status-warning/10">
-                  <h2 class="text-xs font-bold uppercase tracking-wider text-status-warning flex items-center gap-2">
-                    <span class="material-symbols-outlined text-lg">move_down</span>
-                    Borrow / Transfer Box Accessory to Another Set
-                  </h2>
+            <div class="tab-content" id="opTabContent">
+              <!-- TAB 1: Multi-Item Issue Form -->
+              <div class="tab-pane fade show active" id="issue-panel" role="tabpanel">
+                <div class="bg-background border border-surface-border rounded-xl shadow-sm overflow-hidden">
+                  <div class="px-5 py-3.5 border-b border-surface-border bg-surface">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
+                      <span class="material-symbols-outlined text-primary text-lg">output</span>
+                      Issue Equipment to Field Team
+                    </h2>
+                  </div>
+                  <div class="p-3 md:p-5">
+                    <form id="issueForm" onsubmit="issueEquipment(event)">
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <label class="block text-xs font-bold text-text-primary mb-1.5">Issue Date</label>
+                          <input type="date" id="i_date"
+                            class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
+                            required />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-bold text-text-primary mb-1.5">Team Leader / Issuer</label>
+                          <input type="text" id="i_leader"
+                            class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
+                            placeholder="Leader Full Name" required />
+                        </div>
+
+                        <div>
+                          <label class="block text-xs font-bold text-text-primary mb-1.5">Equipment Receiver
+                            Person</label>
+                          <input type="text" id="i_receiver"
+                            class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
+                            placeholder="Person receiving equipment" required />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-bold text-text-primary mb-1.5">Project ID / Location</label>
+                          <input type="text" id="i_project_id"
+                            class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm font-mono-data bg-background outline-none"
+                            placeholder="e.g. PRJ-2026-01" required />
+                        </div>
+                      </div>
+
+                      <!-- Multiple Team Members Section -->
+                      <div class="mb-4">
+                        <label class="block text-xs font-bold text-text-primary mb-1.5">Team Members / Assistants
+                          (Multiple)</label>
+                        <div class="flex items-center gap-2 mb-2 w-full">
+                          <input type="text" id="member_input"
+                            class="flex-1 min-w-0 px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none focus:border-primary"
+                            placeholder="Enter member name and click Add" />
+                          <button
+                            class="px-3 py-2 border border-surface-border rounded-lg text-xs font-semibold hover:bg-surface-container-low transition-colors shrink-0 flex items-center gap-1"
+                            type="button" onclick="addTeamMember()">
+                            <span class="material-symbols-outlined text-sm">person_add</span>
+                            Add
+                          </button>
+                        </div>
+                        <div id="team_members_container"
+                          class="p-3 border border-surface-border rounded-lg bg-surface flex flex-wrap gap-1.5 min-h-[48px]">
+                          <small class="text-xs text-text-secondary" id="empty_member_text">No additional members added
+                            yet.</small>
+                        </div>
+                      </div>
+
+                      <!-- MULTI-ITEM SELECTION SECTION -->
+                      <div class="mb-4">
+                        <label class="block text-xs font-bold text-primary mb-2 flex items-center gap-1">
+                          <span class="material-symbols-outlined text-base">checklist</span>
+                          Select Items & Quantities to Issue
+                        </label>
+                        <div class="border border-surface-border rounded-lg p-3 bg-surface max-h-64 overflow-y-auto"
+                          id="multi_item_container">
+                          <!-- Dynamic Items Checkboxes -->
+                        </div>
+                      </div>
+
+                      <div class="mb-4">
+                        <label class="block text-xs font-bold text-text-primary mb-1.5">Remarks / Issue Purpose</label>
+                        <input type="text" id="i_remarks"
+                          class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
+                          placeholder="Additional purpose or site notes..." />
+                      </div>
+
+                      <button type="submit"
+                        class="w-full py-3 bg-primary text-on-primary rounded-lg text-sm font-bold hover:bg-surface-tint transition-colors flex items-center justify-center gap-2 shadow-sm">
+                        <span class="material-symbols-outlined text-lg">check_circle</span>
+                        Confirm & Issue Selected Items
+                      </button>
+                    </form>
+                  </div>
                 </div>
-                <div class="p-3 md:p-5">
-                  <form id="transferForm" onsubmit="processBoxTransfer(event)">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <label class="block text-xs font-bold text-text-primary mb-1.5">Source Equipment Set (যে সেট
-                          থেকে মালামাল নেওয়া
-                          হবে)</label>
-                        <select id="t_from_set"
-                          class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
-                          onchange="updateSourceBoxAccessoriesDropdown()" required>
-                          <option value="">-- Select Source Set --</option>
-                        </select>
+              </div>
+
+              <!-- TAB 2: Inter-Set Accessory Borrow / Transfer Form -->
+              <div class="tab-pane fade" id="transfer-panel" role="tabpanel">
+                <div class="bg-background border border-status-warning/30 rounded-xl shadow-sm overflow-hidden">
+                  <div class="px-5 py-3.5 border-b border-status-warning/20 bg-status-warning/10">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-status-warning flex items-center gap-2">
+                      <span class="material-symbols-outlined text-lg">move_down</span>
+                      Borrow / Transfer Box Accessory to Another Set
+                    </h2>
+                  </div>
+                  <div class="p-3 md:p-5">
+                    <form id="transferForm" onsubmit="processBoxTransfer(event)">
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <label class="block text-xs font-bold text-text-primary mb-1.5">Source Equipment Set (যে সেট
+                            থেকে মালামাল নেওয়া
+                            হবে)</label>
+                          <select id="t_from_set"
+                            class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
+                            onchange="updateSourceBoxAccessoriesDropdown()" required>
+                            <option value="">-- Select Source Set --</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label class="block text-xs font-bold text-text-primary mb-1.5">Select Accessory to Borrow /
+                            Move</label>
+                          <select id="t_accessory_item"
+                            class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
+                            required>
+                            <option value="">
+                              -- Select Source Set First --
+                            </option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label class="block text-xs font-bold text-text-primary mb-1.5">Destination Equipment Set (যে
+                            সেটে নেওয়া
+                            হবে)</label>
+                          <select id="t_to_set"
+                            class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
+                            required>
+                            <option value="">
+                              -- Select Destination Set --
+                            </option>
+                          </select>
+                        </div>
+                        <div>
+                          <label class="block text-xs font-bold text-text-primary mb-1.5">Quantity to Move</label>
+                          <input type="number" id="t_qty"
+                            class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
+                            min="1" value="1" required />
+                        </div>
                       </div>
-                      <div>
-                        <label class="block text-xs font-bold text-text-primary mb-1.5">Select Accessory to Borrow /
-                          Move</label>
-                        <select id="t_accessory_item"
+
+                      <div class="mb-4">
+                        <label class="block text-xs font-bold text-text-primary mb-1.5">Reason for Inter-Set
+                          Borrowing</label>
+                        <input type="text" id="t_reason"
                           class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
-                          required>
-                          <option value="">
-                            -- Select Source Set First --
+                          placeholder="e.g. Needed extra battery for Site-B testing..." required />
+                      </div>
+
+                      <button type="submit"
+                        class="w-full py-2.5 bg-status-warning text-white rounded-lg text-sm font-bold hover:opacity-90 transition-colors flex items-center justify-center gap-2 shadow-sm">
+                        <span class="material-symbols-outlined text-lg">swap_horiz</span>
+                        Confirm Accessory Transfer
+                      </button>
+                    </form>
+
+                    <!-- Active Borrowed / Transferred Items Tracking List -->
+                    <div class="mt-6 border-t border-surface-border pt-4">
+                      <h3
+                        class="text-xs font-bold text-text-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-base">format_list_bulleted</span>
+                        Currently Borrowed / Transferred Accessories
+                      </h3>
+                      <div id="borrowed_list_container" class="mt-2"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- TAB 3: Report Lost Form -->
+              <div class="tab-pane fade" id="lost-panel" role="tabpanel">
+                <div class="bg-background border border-status-alert/30 rounded-xl shadow-sm overflow-hidden">
+                  <div class="px-5 py-3.5 border-b border-status-alert/20 bg-status-alert/10">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-status-alert flex items-center gap-2">
+                      <span class="material-symbols-outlined text-lg">report_problem</span>
+                      Report Lost / Missing Item
+                    </h2>
+                  </div>
+                  <div class="p-3 md:p-5">
+                    <form id="lostForm" onsubmit="reportLostEquipment(event)">
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <label class="block text-xs font-bold text-text-primary mb-1.5">Date of Loss</label>
+                          <input type="date" id="l_date"
+                            class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
+                            required />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-bold text-text-primary mb-1.5">Person Responsible /
+                            In-Charge</label>
+                          <input type="text" id="l_person"
+                            class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
+                            placeholder="Name of person responsible" required />
+                        </div>
+                      </div>
+
+                      <div class="mb-4">
+                        <label class="block text-xs font-bold text-status-alert mb-1.5">Report Loss Scope</label>
+                        <select id="l_target_type"
+                          class="w-full px-3 py-2 border border-status-alert/40 rounded-lg text-sm bg-background outline-none"
+                          onchange="toggleLostTypeFields()" required>
+                          <option value="FULL_ITEM">
+                            1. Full Main Equipment / Loose Accessory Lost
+                          </option>
+                          <option value="BOX_ITEM">
+                            2. Specific Box Accessory Lost from Set
                           </option>
                         </select>
                       </div>
 
-                      <div>
-                        <label class="block text-xs font-bold text-text-primary mb-1.5">Destination Equipment Set (যে
-                          সেটে নেওয়া
-                          হবে)</label>
-                        <select id="t_to_set"
-                          class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
-                          required>
-                          <option value="">
-                            -- Select Destination Set --
-                          </option>
-                        </select>
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <label class="block text-xs font-bold text-text-primary mb-1.5">Item Name</label>
+                          <select id="l_name"
+                            class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
+                            onchange="updateLostSerialDropdown()" required>
+                            <option value="">-- Select Item --</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label class="block text-xs font-bold text-text-primary mb-1.5">Serial Number / Item
+                            Reference</label>
+                          <select id="l_serial"
+                            class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm font-mono-data bg-background outline-none"
+                            onchange="updateLostBoxItemsDropdown()" required>
+                            <option value="">-- Select Serial --</option>
+                          </select>
+                        </div>
                       </div>
-                      <div>
-                        <label class="block text-xs font-bold text-text-primary mb-1.5">Quantity to Move</label>
-                        <input type="number" id="t_qty"
-                          class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
-                          min="1" value="1" required />
+
+                      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
+                        <div class="md:col-span-8 d-none" id="lost_box_item_div">
+                          <label class="block text-xs font-bold text-primary mb-1.5">Select Lost Box Accessory</label>
+                          <select id="l_box_item"
+                            class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none">
+                            <option value="">-- Select Serial First --</option>
+                          </select>
+                        </div>
+                        <div class="md:col-span-4 d-none" id="lost_box_qty_div">
+                          <label class="block text-xs font-bold text-text-primary mb-1.5">Lost Quantity</label>
+                          <input type="number" id="l_qty"
+                            class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
+                            min="1" value="1" />
+                        </div>
                       </div>
-                    </div>
 
-                    <div class="mb-4">
-                      <label class="block text-xs font-bold text-text-primary mb-1.5">Reason for Inter-Set
-                        Borrowing</label>
-                      <input type="text" id="t_reason"
-                        class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
-                        placeholder="e.g. Needed extra battery for Site-B testing..." required />
-                    </div>
+                      <div class="mb-4">
+                        <label class="block text-xs font-bold text-text-primary mb-1.5">Incident Details / How it was
+                          lost</label>
+                        <textarea id="l_incident"
+                          class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
+                          rows="2" placeholder="Describe circumstances..." required></textarea>
+                      </div>
 
-                    <button type="submit"
-                      class="w-full py-2.5 bg-status-warning text-white rounded-lg text-sm font-bold hover:opacity-90 transition-colors flex items-center justify-center gap-2 shadow-sm">
-                      <span class="material-symbols-outlined text-lg">swap_horiz</span>
-                      Confirm Accessory Transfer
-                    </button>
-                  </form>
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                          <label class="block text-xs font-bold text-text-primary mb-1.5">FIR / Report No (If
+                            any)</label>
+                          <input type="text" id="l_fir"
+                            class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
+                            placeholder="GD-102938 / N/A" />
+                        </div>
+                        <div>
+                          <label class="block text-xs font-bold text-text-primary mb-1.5">Recovery Status</label>
+                          <select id="l_recovery"
+                            class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
+                            required>
+                            <option value="Under Investigation">
+                              Under Investigation
+                            </option>
+                            <option value="Pending Salary Deduction">
+                              Pending Salary Deduction
+                            </option>
+                            <option value="Compensated / Fined">
+                              Compensated / Fined
+                            </option>
+                            <option value="Written Off">
+                              Company Written Off
+                            </option>
+                          </select>
+                        </div>
+                        <div>
+                          <label class="block text-xs font-bold text-text-primary mb-1.5">Fine / Compensation</label>
+                          <input type="text" id="l_fine_amount"
+                            class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
+                            placeholder="e.g. 5000 Tk, $50 or N/A" />
+                        </div>
+                      </div>
 
-                  <!-- Active Borrowed / Transferred Items Tracking List -->
-                  <div class="mt-6 border-t border-surface-border pt-4">
-                    <h3
-                      class="text-xs font-bold text-text-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                      <span class="material-symbols-outlined text-base">format_list_bulleted</span>
-                      Currently Borrowed / Transferred Accessories
-                    </h3>
-                    <div id="borrowed_list_container" class="mt-2"></div>
+                      <div
+                        class="p-3 bg-status-alert/10 border border-status-alert/20 rounded-lg mb-4 text-xs text-status-alert flex items-start gap-2">
+                        <span class="material-symbols-outlined text-base">warning</span>
+                        <span>Submitting this report will permanently alter the
+                          inventory record and initiate a loss investigation
+                          protocol.</span>
+                      </div>
+
+                      <button type="submit"
+                        class="w-full py-2.5 bg-status-alert text-white rounded-lg text-sm font-bold hover:bg-status-alert/90 transition-colors flex items-center justify-center gap-2 shadow-sm">
+                        <span class="material-symbols-outlined text-lg">delete_forever</span>
+                        Submit Lost Report & Update Stock
+                      </button>
+                    </form>
                   </div>
                 </div>
               </div>
             </div>
-
-            <!-- TAB 3: Report Lost Form -->
-            <div class="tab-pane fade" id="lost-panel" role="tabpanel">
-              <div class="bg-background border border-status-alert/30 rounded-xl shadow-sm overflow-hidden">
-                <div class="px-5 py-3.5 border-b border-status-alert/20 bg-status-alert/10">
-                  <h2 class="text-xs font-bold uppercase tracking-wider text-status-alert flex items-center gap-2">
-                    <span class="material-symbols-outlined text-lg">report_problem</span>
-                    Report Lost / Missing Item
-                  </h2>
-                </div>
-                <div class="p-3 md:p-5">
-                  <form id="lostForm" onsubmit="reportLostEquipment(event)">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <label class="block text-xs font-bold text-text-primary mb-1.5">Date of Loss</label>
-                        <input type="date" id="l_date"
-                          class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
-                          required />
-                      </div>
-                      <div>
-                        <label class="block text-xs font-bold text-text-primary mb-1.5">Person Responsible /
-                          In-Charge</label>
-                        <input type="text" id="l_person"
-                          class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
-                          placeholder="Name of person responsible" required />
-                      </div>
-                    </div>
-
-                    <div class="mb-4">
-                      <label class="block text-xs font-bold text-status-alert mb-1.5">Report Loss Scope</label>
-                      <select id="l_target_type"
-                        class="w-full px-3 py-2 border border-status-alert/40 rounded-lg text-sm bg-background outline-none"
-                        onchange="toggleLostTypeFields()" required>
-                        <option value="FULL_ITEM">
-                          1. Full Main Equipment / Loose Accessory Lost
-                        </option>
-                        <option value="BOX_ITEM">
-                          2. Specific Box Accessory Lost from Set
-                        </option>
-                      </select>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <label class="block text-xs font-bold text-text-primary mb-1.5">Item Name</label>
-                        <select id="l_name"
-                          class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
-                          onchange="updateLostSerialDropdown()" required>
-                          <option value="">-- Select Item --</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label class="block text-xs font-bold text-text-primary mb-1.5">Serial Number / Item
-                          Reference</label>
-                        <select id="l_serial"
-                          class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm font-mono-data bg-background outline-none"
-                          onchange="updateLostBoxItemsDropdown()" required>
-                          <option value="">-- Select Serial --</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
-                      <div class="md:col-span-8 d-none" id="lost_box_item_div">
-                        <label class="block text-xs font-bold text-primary mb-1.5">Select Lost Box Accessory</label>
-                        <select id="l_box_item"
-                          class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none">
-                          <option value="">-- Select Serial First --</option>
-                        </select>
-                      </div>
-                      <div class="md:col-span-4 d-none" id="lost_box_qty_div">
-                        <label class="block text-xs font-bold text-text-primary mb-1.5">Lost Quantity</label>
-                        <input type="number" id="l_qty"
-                          class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
-                          min="1" value="1" />
-                      </div>
-                    </div>
-
-                    <div class="mb-4">
-                      <label class="block text-xs font-bold text-text-primary mb-1.5">Incident Details / How it was
-                        lost</label>
-                      <textarea id="l_incident"
-                        class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
-                        rows="2" placeholder="Describe circumstances..." required></textarea>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                      <div>
-                        <label class="block text-xs font-bold text-text-primary mb-1.5">FIR / Report No (If any)</label>
-                        <input type="text" id="l_fir"
-                          class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
-                          placeholder="GD-102938 / N/A" />
-                      </div>
-                      <div>
-                        <label class="block text-xs font-bold text-text-primary mb-1.5">Recovery Status</label>
-                        <select id="l_recovery"
-                          class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
-                          required>
-                          <option value="Under Investigation">
-                            Under Investigation
-                          </option>
-                          <option value="Pending Salary Deduction">
-                            Pending Salary Deduction
-                          </option>
-                          <option value="Compensated / Fined">
-                            Compensated / Fined
-                          </option>
-                          <option value="Written Off">
-                            Company Written Off
-                          </option>
-                        </select>
-                      </div>
-                      <div>
-                        <label class="block text-xs font-bold text-text-primary mb-1.5">Fine / Compensation</label>
-                        <input type="text" id="l_fine_amount"
-                          class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
-                          placeholder="e.g. 5000 Tk, $50 or N/A" />
-                      </div>
-                    </div>
-
-                    <div
-                      class="p-3 bg-status-alert/10 border border-status-alert/20 rounded-lg mb-4 text-xs text-status-alert flex items-start gap-2">
-                      <span class="material-symbols-outlined text-base">warning</span>
-                      <span>Submitting this report will permanently alter the
-                        inventory record and initiate a loss investigation
-                        protocol.</span>
-                    </div>
-
-                    <button type="submit"
-                      class="w-full py-2.5 bg-status-alert text-white rounded-lg text-sm font-bold hover:bg-status-alert/90 transition-colors flex items-center justify-center gap-2 shadow-sm">
-                      <span class="material-symbols-outlined text-lg">delete_forever</span>
-                      Submit Lost Report & Update Stock
-                    </button>
-                  </form>
-                </div>
-              </div>
-            </div>
           </div>
+        </div>
 
+        <!-- SECTION 3: MOVEMENT LOGS & HISTORY (FULL WIDTH) -->
+        <div class="flex flex-col gap-6 w-full pt-6 border-t border-surface-border" id="history-section">
           <!-- Movement Logs & History Header -->
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mt-4"
-            id="history-section">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
             <h2 class="text-base font-bold text-primary flex items-center gap-2 m-0">
               <span class="material-symbols-outlined text-xl">history</span>
               Movement Logs & History
@@ -930,8 +938,8 @@
             </div>
           </div>
 
-          <!-- 2.1: Currently Issued / Return Pending Items Table -->
-          <div class="bg-background border border-status-warning/30 rounded-xl shadow-sm overflow-hidden mb-6">
+          <!-- 2.1: Currently Issued / Return Pending Items Table (FULL WIDTH) -->
+          <div class="w-full bg-background border border-status-warning/30 rounded-xl shadow-sm overflow-hidden">
             <div
               class="px-5 py-3.5 border-b border-status-warning/20 bg-status-warning/10 flex justify-between items-center">
               <h3 class="text-xs font-bold uppercase tracking-wider text-status-warning flex items-center gap-1.5">
@@ -941,16 +949,16 @@
               <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-status-warning/20 text-status-warning"
                 id="pendingCount">0 Pending</span>
             </div>
-            <div class="overflow-x-auto max-h-80">
+            <div class="overflow-x-auto w-full max-h-96">
               <table class="w-full text-left text-xs border-collapse" id="pendingLogTable">
                 <thead>
                   <tr class="bg-surface border-b border-surface-border text-text-secondary uppercase font-bold">
-                    <th class="px-4 py-3">Issue Date</th>
-                    <th class="px-4 py-3">Project & Location</th>
-                    <th class="px-4 py-3">People Involved</th>
-                    <th class="px-4 py-3">Item & Box Components</th>
-                    <th class="px-4 py-3">Issue Condition</th>
-                    <th class="px-4 py-3 text-right">Action</th>
+                    <th class="px-4 py-3.5 whitespace-nowrap min-w-[130px]">Issue Date</th>
+                    <th class="px-4 py-3.5 whitespace-nowrap min-w-[180px]">Project & Location</th>
+                    <th class="px-4 py-3.5 whitespace-nowrap min-w-[180px]">People Involved</th>
+                    <th class="px-4 py-3.5 whitespace-nowrap min-w-[220px]">Item & Box Components</th>
+                    <th class="px-4 py-3.5 whitespace-nowrap min-w-[140px]">Issue Condition</th>
+                    <th class="px-4 py-3.5 text-right whitespace-nowrap min-w-[100px]">Action</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-surface-border"></tbody>
@@ -958,8 +966,8 @@
             </div>
           </div>
 
-          <!-- 2.2: Already Returned & Incident History Table -->
-          <div class="bg-background border border-status-success/30 rounded-xl shadow-sm overflow-hidden">
+          <!-- 2.2: Already Returned & Incident History Table (FULL WIDTH) -->
+          <div class="w-full bg-background border border-status-success/30 rounded-xl shadow-sm overflow-hidden">
             <div
               class="px-5 py-3.5 border-b border-status-success/20 bg-status-success/10 flex justify-between items-center">
               <h3 class="text-xs font-bold uppercase tracking-wider text-status-success flex items-center gap-1.5">
@@ -969,16 +977,16 @@
               <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-status-success/20 text-status-success"
                 id="returnedCount">0 Records</span>
             </div>
-            <div class="overflow-x-auto max-h-80">
+            <div class="overflow-x-auto w-full max-h-96">
               <table class="w-full text-left text-xs border-collapse" id="returnedLogTable">
                 <thead>
                   <tr class="bg-surface border-b border-surface-border text-text-secondary uppercase font-bold">
-                    <th class="px-4 py-3">Dates / Type</th>
-                    <th class="px-4 py-3">Project</th>
-                    <th class="px-4 py-3">People Involved</th>
-                    <th class="px-4 py-3">Item & Box Components</th>
-                    <th class="px-4 py-3">Return Condition / Details</th>
-                    <th class="px-4 py-3">Status</th>
+                    <th class="px-4 py-3.5 whitespace-nowrap min-w-[140px]">Dates / Type</th>
+                    <th class="px-4 py-3.5 whitespace-nowrap min-w-[160px]">Project</th>
+                    <th class="px-4 py-3.5 whitespace-nowrap min-w-[180px]">People Involved</th>
+                    <th class="px-4 py-3.5 whitespace-nowrap min-w-[220px]">Item & Box Components</th>
+                    <th class="px-4 py-3.5 whitespace-nowrap min-w-[180px]">Return Condition / Details</th>
+                    <th class="px-4 py-3.5 text-center whitespace-nowrap min-w-[100px]">Status</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-surface-border"></tbody>

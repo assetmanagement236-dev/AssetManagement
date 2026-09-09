@@ -271,20 +271,23 @@ table td {
   padding: 12px 20px;
 }
 
-/* SCROLLBAR */
+/* SCROLLBAR - Auto Hiding & Transparent */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #f8fafc;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  background-color: transparent;
+  border-radius: 10px;
+}
+:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 116, 139, 0.3);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background-color: rgba(100, 116, 139, 0.6);
 }
 
 /* LAYOUT CANVAS CLEARANCE FIX */
