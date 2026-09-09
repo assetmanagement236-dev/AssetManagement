@@ -322,13 +322,17 @@
             <span>Export Backup</span>
           </button>
 
-          <button
-            class="flex sm:hidden items-center gap-3 px-3 py-2 mt-2 bg-status-alert/10 hover:bg-status-alert/20 text-status-alert transition-all rounded-lg text-xs w-full text-left font-bold border border-status-alert/30"
-            onclick="signOutUser()"
-          >
-            <span class="material-symbols-outlined text-base">logout</span>
-            <span>Sign Out</span>
-          </button>
+          <div class="mt-4 pt-3 border-t border-surface-border">
+            <div class="px-2 mb-1.5 text-[10px] text-text-secondary uppercase font-bold tracking-wider">Logged in as</div>
+            <div class="px-2 mb-3 text-xs font-bold text-primary truncate" id="sidebarActiveUserEmail">Loading...</div>
+            <button
+              class="flex sm:hidden items-center gap-3 px-3 py-2 bg-status-alert/10 hover:bg-status-alert/20 text-status-alert transition-all rounded-lg text-xs w-full text-left font-bold border border-status-alert/30"
+              onclick="signOutUser()"
+            >
+              <span class="material-symbols-outlined text-base">logout</span>
+              <span>Sign Out</span>
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -452,7 +456,7 @@
               class="bg-background border border-surface-border rounded-xl shadow-sm overflow-hidden"
             >
               <div
-                class="px-5 py-3.5 border-b border-surface-border bg-surface flex items-center justify-between"
+                class="px-3 py-3 md:px-5 md:py-3.5 border-b border-surface-border bg-surface flex items-center justify-between"
               >
                 <h2
                   class="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2"
@@ -463,7 +467,7 @@
                   1. Add Master Equipment / Accessory
                 </h2>
               </div>
-              <div class="p-5">
+              <div class="p-3 md:p-5">
                 <form id="masterForm" onsubmit="addMasterItem(event)">
                   <div class="mb-3">
                     <label
@@ -694,7 +698,7 @@
               class="bg-background border border-surface-border rounded-xl shadow-sm overflow-hidden mb-6"
             >
               <div
-                class="px-5 py-3.5 border-b border-surface-border bg-surface flex items-center justify-between"
+                class="px-3 py-3 md:px-5 md:py-3.5 border-b border-surface-border bg-surface flex items-center justify-between"
               >
                 <h2
                   class="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2"
@@ -720,9 +724,9 @@
                     <tr
                       class="bg-surface border-b border-surface-border text-text-secondary uppercase font-bold"
                     >
-                      <th class="px-4 py-3">Item Name</th>
-                      <th class="px-4 py-3 text-center">Total Qty</th>
-                      <th class="px-4 py-3 text-center">Available Stock</th>
+                      <th class="px-2 py-2 md:px-4 md:py-3">Item Name</th>
+                      <th class="px-2 py-2 md:px-4 md:py-3 text-center">Total Qty</th>
+                      <th class="px-2 py-2 md:px-4 md:py-3 text-center">Available Stock</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-surface-border"></tbody>
@@ -755,11 +759,11 @@
                     <tr
                       class="bg-surface border-b border-surface-border text-text-secondary uppercase font-bold"
                     >
-                      <th class="px-4 py-3">Type / Serial</th>
-                      <th class="px-4 py-3">Item & Set Integrity</th>
-                      <th class="px-4 py-3">Condition</th>
-                      <th class="px-4 py-3">Status</th>
-                      <th class="px-4 py-3 text-right">Action</th>
+                      <th class="px-2 py-2 md:px-4 md:py-3">Type / Serial</th>
+                      <th class="px-2 py-2 md:px-4 md:py-3">Item & Set Integrity</th>
+                      <th class="px-2 py-2 md:px-4 md:py-3 text-center">Condition</th>
+                      <th class="px-2 py-2 md:px-4 md:py-3 text-center">Status</th>
+                      <th class="px-2 py-2 md:px-4 md:py-3 text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-surface-border"></tbody>
@@ -847,7 +851,7 @@
                       Issue Equipment to Field Team
                     </h2>
                   </div>
-                  <div class="p-5">
+                  <div class="p-3 md:p-5">
                     <form id="issueForm" onsubmit="issueEquipment(event)">
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
@@ -1002,7 +1006,7 @@
                       Borrow / Transfer Box Accessory to Another Set
                     </h2>
                   </div>
-                  <div class="p-5">
+                  <div class="p-3 md:p-5">
                     <form
                       id="transferForm"
                       onsubmit="processBoxTransfer(event)"
@@ -1129,7 +1133,7 @@
                       Report Lost / Missing Item
                     </h2>
                   </div>
-                  <div class="p-5">
+                  <div class="p-3 md:p-5">
                     <form id="lostForm" onsubmit="reportLostEquipment(event)">
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>

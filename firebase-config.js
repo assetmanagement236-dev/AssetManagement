@@ -12,17 +12,7 @@ let firebaseConfig = {
   appId: "1:182515802731:web:bb465f7e255beb585cc72e",
 };
 
-const savedConfig = localStorage.getItem("eq_firebase_config");
-if (savedConfig) {
-  try {
-    const parsed = JSON.parse(savedConfig);
-    if (parsed && parsed.projectId && parsed.apiKey) {
-      firebaseConfig = parsed;
-    }
-  } catch (err) {
-    console.warn("Could not parse saved Firebase config", err);
-  }
-}
+localStorage.removeItem("eq_firebase_config"); // Force clear any stale custom config that causes offline issues
 
 let db = null;
 let auth = null;
@@ -82,6 +72,9 @@ function initFirebase() {
 
           if (document.getElementById("activeUserEmail")) {
             document.getElementById("activeUserEmail").textContent = user.email;
+          }
+          if (document.getElementById("sidebarActiveUserEmail")) {
+            document.getElementById("sidebarActiveUserEmail").textContent = user.email;
           }
 
           // Load local user data scoped uniquely, then start Firebase listeners
@@ -420,9 +413,4 @@ function signOutUser() {
   }
 }
 
-// Function to save Firebase config via UI Modal
-function saveFirebaseConfigFromUI(configObj) {
-  localStorage.setItem("eq_firebase_config", JSON.stringify(configObj));
-  firebaseConfig = configObj;
-  initFirebase();
-}
+// (Legacy config UI removed)
