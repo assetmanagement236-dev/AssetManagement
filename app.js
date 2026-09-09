@@ -1294,14 +1294,22 @@ function renderSummaryTable() {
 
   keys.forEach((name) => {
     const avail = summary[name].available;
-    const badgeClass = avail > 0 ? "bg-success" : "bg-danger";
+    const badgeStyle = avail > 0 
+      ? 'bg-status-success/10 text-status-success border border-status-success/30' 
+      : 'bg-status-alert/10 text-status-alert border border-status-alert/30';
+    
     tbody.innerHTML += `
-            <tr>
-                <td class="fw-bold">${name} <small class="text-muted">(${summary[name].type})</small></td>
-                <td class="text-center fw-semibold">${summary[name].total}</td>
-                <td class="text-center"><span class="badge ${badgeClass}">${avail} Available</span></td>
-            </tr>
-        `;
+      <tr class="hover:bg-surface-container-low/50 transition-colors">
+        <td class="px-4 py-3 align-middle text-left">
+          <div class="font-bold text-text-primary text-xs sm:text-sm">${name}</div>
+          <div class="text-[10px] text-text-secondary font-semibold tracking-wider uppercase inline-block bg-surface-container-high/60 px-2 py-0.5 rounded mt-0.5">${summary[name].type}</div>
+        </td>
+        <td class="px-4 py-3 align-middle text-center font-bold text-text-primary text-sm">${summary[name].total}</td>
+        <td class="px-4 py-3 align-middle text-right">
+          <span class="px-2.5 py-1 rounded-full text-xs font-bold ${badgeStyle} inline-block whitespace-nowrap">${avail} Available</span>
+        </td>
+      </tr>
+    `;
   });
 }
 
@@ -1342,55 +1350,68 @@ function renderMasterTable() {
       }
 
       let setIntegrityBadge = isSetIncomplete
-        ? `<div class="mt-1"><span class="badge badge-incomplete"><i class="bi bi-exclamation-triangle-fill me-1"></i>INCOMPLETE SET (${missingDetails.join(", ")})</span></div>`
+        ? `<div class="mt-1.5"><span class="badge badge-incomplete"><i class="bi bi-exclamation-triangle-fill me-1"></i>INCOMPLETE SET (${missingDetails.join(", ")})</span></div>`
         : item.boxItems && item.boxItems.length > 0
-          ? `<div class="mt-1"><span class="badge bg-success bg-opacity-10 text-success border border-success" style="font-size:0.7rem;"><i class="bi bi-check-circle me-1"></i>COMPLETE SET</span></div>`
+          ? `<div class="mt-1.5"><span class="badge bg-status-success/10 text-status-success border border-status-success/30" style="font-size:0.7rem;"><i class="bi bi-check-circle me-1"></i>COMPLETE SET</span></div>`
           : "";
 
       let boxChips = "";
       if (item.boxItems && item.boxItems.length > 0) {
-        boxChips = `<div class="mt-1">${item.boxItems.map((b) => `<span class="box-item-chip"><i class="bi bi-box me-1"></i>${b.name} (${b.qty})</span>`).join("")}</div>`;
+        boxChips = `<div class="mt-1.5 flex flex-wrap gap-1">${item.boxItems.map((b) => `<span class="box-item-chip"><i class="bi bi-box me-1"></i>${b.name} (${b.qty})</span>`).join("")}</div>`;
       }
 
       const serialsStr = formatSerialText(item.serial, item.equipmentSerial);
-      const modelStr =
-        item.model && item.model !== "N/A"
-          ? `<div class="small text-muted">Model: <b>${item.model}</b></div>`
-          : "";
+      const serialsHtml = serialsStr !== "N/A"
+        ? `<div class="font-mono text-xs text-primary font-bold tracking-tight leading-snug">${serialsStr}</div>`
+        : `<span class="text-xs text-text-secondary font-mono">N/A</span>`;
+
+      const modelHtml = item.model && item.model !== "N/A"
+        ? `<div class="text-[11px] text-text-secondary font-medium leading-snug mt-1">Model: <span class="font-semibold text-text-primary">${item.model}</span></div>`
+        : "";
 
       tbody.innerHTML += `
-                <tr>
-                    <td>
-                        <span class="fw-bold text-primary font-mono-data">${serialsStr}</span>
-                        ${modelStr}
-                    </td>
-                    <td>
-                        <div class="fw-bold">${item.name}</div>
-                        ${setIntegrityBadge}
-                        ${boxChips}
-                    </td>
-                    <td>
-                        <div><span class="condition-badge ${condClass}">${item.condition}</span></div>
-                        <small class="text-muted">${item.problems || "No reported issues"}</small>
-                    </td>
-                    <td>${statusBadge}</td>
-                    <td>
-                        <button class="btn btn-outline-danger btn-sm py-0 px-2" onclick="deleteMasterItem(${item.id})"><i class="bi bi-trash"></i></button>
-                    </td>
-                </tr>
-            `;
+        <tr class="hover:bg-surface-container-low/50 transition-colors">
+          <td class="px-4 py-3.5 align-middle">
+            <div class="flex flex-col gap-0.5">
+              ${serialsHtml}
+              ${modelHtml}
+            </div>
+          </td>
+          <td class="px-4 py-3.5 align-middle">
+            <div class="font-bold text-text-primary text-xs sm:text-sm">${item.name}</div>
+            ${setIntegrityBadge}
+            ${boxChips}
+          </td>
+          <td class="px-4 py-3.5 align-middle text-center">
+            <div class="inline-flex flex-col items-center gap-1">
+              <span class="condition-badge ${condClass}">${item.condition}</span>
+              <span class="text-[11px] text-text-secondary font-normal block leading-tight whitespace-normal max-w-[140px]">${item.problems || "No reported issues"}</span>
+            </div>
+          </td>
+          <td class="px-4 py-3.5 align-middle text-center">
+            ${statusBadge}
+          </td>
+          <td class="px-4 py-3.5 align-middle text-right">
+            <button class="p-1.5 text-status-alert hover:bg-status-alert/15 rounded-lg transition-colors inline-flex items-center justify-center border border-status-alert/20" onclick="deleteMasterItem(${item.id})" title="Delete Item">
+              <span class="material-symbols-outlined text-base">delete</span>
+            </button>
+          </td>
+        </tr>
+      `;
     } else {
       tbody.innerHTML += `
-                <tr class="table-warning bg-opacity-10">
-                    <td><span class="badge badge-accessory">ACCESSORY</span></td>
-                    <td class="fw-bold">${item.name}</td>
-                    <td><small class="text-muted">Loose Consumable Item</small></td>
-                    <td><span class="badge bg-dark">Qty: ${item.quantity}</span></td>
-                    <td>
-                        <button class="btn btn-outline-danger btn-sm py-0 px-2" onclick="deleteMasterItem(${item.id})"><i class="bi bi-trash"></i></button>
-                    </td>
-                </tr>
-            `;
+        <tr class="hover:bg-surface-container-low/50 transition-colors bg-status-warning/5">
+          <td class="px-4 py-3.5 align-middle"><span class="badge badge-accessory">ACCESSORY</span></td>
+          <td class="px-4 py-3.5 align-middle font-bold text-text-primary text-xs sm:text-sm">${item.name}</td>
+          <td class="px-4 py-3.5 align-middle text-center"><span class="text-xs text-text-secondary">Loose Consumable Item</span></td>
+          <td class="px-4 py-3.5 align-middle text-center"><span class="badge bg-surface-container-high text-text-primary border border-surface-border">Qty: ${item.quantity}</span></td>
+          <td class="px-4 py-3.5 align-middle text-right">
+            <button class="p-1.5 text-status-alert hover:bg-status-alert/15 rounded-lg transition-colors inline-flex items-center justify-center border border-status-alert/20" onclick="deleteMasterItem(${item.id})" title="Delete Item">
+              <span class="material-symbols-outlined text-base">delete</span>
+            </button>
+          </td>
+        </tr>
+      `;
     }
   });
 }
