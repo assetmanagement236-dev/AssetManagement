@@ -374,196 +374,192 @@
         </div>
       </div>
 
-      <!-- Main Content Full-Width Responsive Container -->
-      <div class="flex flex-col gap-8 w-full max-w-7xl mx-auto">
-        <!-- SECTION 1: MASTER INVENTORY (FULL WIDTH) -->
-        <div class="flex flex-col gap-6 w-full" id="master-section">
-          <!-- Top Row: Add Form (7 cols) + Stock Summary (5 cols) on Desktop -->
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            <!-- Master Entry Form Card -->
-            <div class="lg:col-span-7 bg-background border border-surface-border rounded-xl shadow-sm overflow-hidden">
-              <div
-                class="px-3 py-3 md:px-5 md:py-3.5 border-b border-surface-border bg-surface flex items-center justify-between">
-                <h2 class="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
-                  <span class="material-symbols-outlined text-primary text-lg">add_box</span>
-                  1. Add Master Equipment / Accessory
-                </h2>
-              </div>
-              <div class="p-3 md:p-5">
-                <form id="masterForm" onsubmit="addMasterItem(event)">
+      <!-- Main Content Bento Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6" id="master-section">
+        <!-- LEFT PANEL: Master Entry Form & Inventory Tables (5 Columns) -->
+        <div class="lg:col-span-5 flex flex-col gap-6">
+          <!-- Master Entry Form Card -->
+          <div class="bg-background border border-surface-border rounded-xl shadow-sm overflow-hidden">
+            <div
+              class="px-3 py-3 md:px-5 md:py-3.5 border-b border-surface-border bg-surface flex items-center justify-between">
+              <h2 class="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-lg">add_box</span>
+                1. Add Master Equipment / Accessory
+              </h2>
+            </div>
+            <div class="p-3 md:p-5">
+              <form id="masterForm" onsubmit="addMasterItem(event)">
+                <div class="mb-3">
+                  <label class="block text-xs font-bold text-text-primary mb-1.5">Item Category / Type</label>
+                  <select id="m_type"
+                    class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
+                    onchange="toggleItemTypeFields()" required>
+                    <option value="EQUIPMENT">
+                      Main Equipment (With Serial No.)
+                    </option>
+                    <option value="ACCESSORY">
+                      Loose Accessory / Consumable (Quantity Only)
+                    </option>
+                  </select>
+                </div>
+
+                <div class="mb-3 relative">
+                  <label class="block text-xs font-bold text-text-primary mb-1.5">Item Name</label>
+                  <div class="flex gap-1.5">
+                    <input type="text" id="m_name"
+                      class="flex-1 px-3 py-2 border border-surface-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
+                      placeholder="Type or search item name..." autocomplete="off" onkeyup="filterSuggestions()"
+                      onfocus="filterSuggestions()" required />
+                    <button
+                      class="px-3 py-2 border border-surface-border rounded-lg text-text-secondary hover:bg-surface-container-low transition-colors"
+                      type="button" onclick="openManageSuggestionsModal()" title="Manage Saved Suggestions">
+                      <span class="material-symbols-outlined text-base">settings</span>
+                    </button>
+                  </div>
+                  <div id="custom_suggestion_box" class="suggestion-box d-none"></div>
+                </div>
+
+                <!-- EQUIPMENT FIELDS -->
+                <div id="equipment_fields">
                   <div class="mb-3">
-                    <label class="block text-xs font-bold text-text-primary mb-1.5">Item Category / Type</label>
-                    <select id="m_type"
+                    <label class="block text-xs font-bold text-text-primary mb-1.5">Model Number
+                      <span class="text-text-secondary font-normal">(Optional)</span></label>
+                    <input type="text" id="m_model"
                       class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
-                      onchange="toggleItemTypeFields()" required>
-                      <option value="EQUIPMENT">
-                        Main Equipment (With Serial No.)
-                      </option>
-                      <option value="ACCESSORY">
-                        Loose Accessory / Consumable (Quantity Only)
-                      </option>
-                    </select>
+                      placeholder="e.g. M35, Trimble-R10" />
                   </div>
 
-                  <div class="mb-3 relative">
-                    <label class="block text-xs font-bold text-text-primary mb-1.5">Item Name</label>
-                    <div class="flex gap-1.5">
-                      <input type="text" id="m_name"
-                        class="flex-1 px-3 py-2 border border-surface-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
-                        placeholder="Type or search item name..." autocomplete="off" onkeyup="filterSuggestions()"
-                        onfocus="filterSuggestions()" required />
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <label class="block text-xs font-bold text-text-primary mb-1.5">Office Serial Number
+                        <span class="text-text-secondary font-normal">(Optional)</span></label>
+                      <input type="text" id="m_serial"
+                        class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm font-mono-data bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
+                        placeholder="e.g. TS-101, LP-202" />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-bold text-text-primary mb-1.5">Equipment Serial Number
+                        <span class="text-text-secondary font-normal">(Optional)</span></label>
+                      <input type="text" id="m_eq_serial"
+                        class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm font-mono-data bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
+                        placeholder="e.g. SN-8839201" />
+                    </div>
+                  </div>
+                  <small class="text-[11px] text-text-secondary mb-3 block">* Model or Serial numbers are optional for
+                    master
+                    entry</small>
+
+                  <!-- BOX ACCESSORIES INCLUSION (SET) -->
+                  <div
+                    class="mb-3 p-3 bg-surface border border-dashed border-surface-border rounded-xl overflow-hidden">
+                    <label class="block text-xs font-bold text-primary mb-1 flex items-center gap-1">
+                      <span class="material-symbols-outlined text-base">inventory_2</span>
+                      Equipment Box Items / Set Components
+                    </label>
+                    <small class="text-xs text-text-secondary block mb-2">Enter accessories inside box set (e.g.
+                      Battery, Lens,
+                      Charger)</small>
+
+                    <div class="flex items-center gap-1.5 mb-2 w-full overflow-hidden">
+                      <input type="text" id="box_item_name"
+                        class="flex-1 min-w-0 px-2.5 py-1.5 border border-surface-border rounded-lg text-xs bg-background outline-none focus:border-primary"
+                        placeholder="Box Item (e.g. Battery)" />
+                      <input type="number" id="box_item_qty"
+                        class="w-14 shrink-0 px-2 py-1.5 border border-surface-border rounded-lg text-xs bg-background outline-none focus:border-primary text-center"
+                        min="1" value="1" placeholder="Qty" />
                       <button
-                        class="px-3 py-2 border border-surface-border rounded-lg text-text-secondary hover:bg-surface-container-low transition-colors"
-                        type="button" onclick="openManageSuggestionsModal()" title="Manage Saved Suggestions">
-                        <span class="material-symbols-outlined text-base">settings</span>
+                        class="px-3 py-1.5 bg-primary text-on-primary rounded-lg text-xs font-semibold hover:bg-surface-tint transition-colors shrink-0 flex items-center justify-center gap-0.5"
+                        type="button" onclick="addBoxItem()">
+                        <span class="material-symbols-outlined text-sm block">add</span>
                       </button>
                     </div>
-                    <div id="custom_suggestion_box" class="suggestion-box d-none"></div>
-                  </div>
-
-                  <!-- EQUIPMENT FIELDS -->
-                  <div id="equipment_fields">
-                    <div class="mb-3">
-                      <label class="block text-xs font-bold text-text-primary mb-1.5">Model Number
-                        <span class="text-text-secondary font-normal">(Optional)</span></label>
-                      <input type="text" id="m_model"
-                        class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
-                        placeholder="e.g. M35, Trimble-R10" />
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                      <div>
-                        <label class="block text-xs font-bold text-text-primary mb-1.5">Office Serial Number
-                          <span class="text-text-secondary font-normal">(Optional)</span></label>
-                        <input type="text" id="m_serial"
-                          class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm font-mono-data bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
-                          placeholder="e.g. TS-101, LP-202" />
-                      </div>
-                      <div>
-                        <label class="block text-xs font-bold text-text-primary mb-1.5">Equipment Serial Number
-                          <span class="text-text-secondary font-normal">(Optional)</span></label>
-                        <input type="text" id="m_eq_serial"
-                          class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm font-mono-data bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
-                          placeholder="e.g. SN-8839201" />
-                      </div>
-                    </div>
-                    <small class="text-[11px] text-text-secondary mb-3 block">* Model or Serial numbers are optional for
-                      master
-                      entry</small>
-
-                    <!-- BOX ACCESSORIES INCLUSION (SET) -->
-                    <div
-                      class="mb-3 p-3 bg-surface border border-dashed border-surface-border rounded-xl overflow-hidden">
-                      <label class="block text-xs font-bold text-primary mb-1 flex items-center gap-1">
-                        <span class="material-symbols-outlined text-base">inventory_2</span>
-                        Equipment Box Items / Set Components
-                      </label>
-                      <small class="text-xs text-text-secondary block mb-2">Enter accessories inside box set (e.g.
-                        Battery, Lens,
-                        Charger)</small>
-
-                      <div class="flex items-center gap-1.5 mb-2 w-full overflow-hidden">
-                        <input type="text" id="box_item_name"
-                          class="flex-1 min-w-0 px-2.5 py-1.5 border border-surface-border rounded-lg text-xs bg-background outline-none focus:border-primary"
-                          placeholder="Box Item (e.g. Battery)" />
-                        <input type="number" id="box_item_qty"
-                          class="w-14 shrink-0 px-2 py-1.5 border border-surface-border rounded-lg text-xs bg-background outline-none focus:border-primary text-center"
-                          min="1" value="1" placeholder="Qty" />
-                        <button
-                          class="px-3 py-1.5 bg-primary text-on-primary rounded-lg text-xs font-semibold hover:bg-surface-tint transition-colors shrink-0 flex items-center justify-center gap-0.5"
-                          type="button" onclick="addBoxItem()">
-                          <span class="material-symbols-outlined text-sm block">add</span>
-                        </button>
-                      </div>
-                      <div id="box_items_container" class="mt-2 flex flex-wrap gap-1.5">
-                        <small class="text-xs text-text-secondary" id="empty_box_text">No box items added to set
-                          yet.</small>
-                      </div>
-                    </div>
-
-                    <div class="mb-3">
-                      <label class="block text-xs font-bold text-text-primary mb-1.5">Initial Equipment
-                        Condition</label>
-                      <select id="m_condition"
-                        class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none">
-                        <option value="Good">Good (Working fine)</option>
-                        <option value="Minor Fault">
-                          Minor Fault (Has minor issues)
-                        </option>
-                        <option value="Damaged">Damaged / Needs Repair</option>
-                      </select>
-                    </div>
-                    <div class="mb-3">
-                      <label class="block text-xs font-bold text-text-primary mb-1.5">Problem / Condition Details (If
-                        any)</label>
-                      <textarea id="m_problems"
-                        class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
-                        rows="2" placeholder="Describe any existing defects..."></textarea>
+                    <div id="box_items_container" class="mt-2 flex flex-wrap gap-1.5">
+                      <small class="text-xs text-text-secondary" id="empty_box_text">No box items added to set
+                        yet.</small>
                     </div>
                   </div>
 
-                  <!-- ACCESSORY FIELDS -->
-                  <div id="accessory_fields" class="d-none">
-                    <div class="mb-3">
-                      <label class="block text-xs font-bold text-text-primary mb-1.5">Total Quantity</label>
-                      <input type="number" id="m_qty"
-                        class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
-                        min="1" placeholder="e.g. 5, 10, 50" />
-                    </div>
+                  <div class="mb-3">
+                    <label class="block text-xs font-bold text-text-primary mb-1.5">Initial Equipment Condition</label>
+                    <select id="m_condition"
+                      class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none">
+                      <option value="Good">Good (Working fine)</option>
+                      <option value="Minor Fault">
+                        Minor Fault (Has minor issues)
+                      </option>
+                      <option value="Damaged">Damaged / Needs Repair</option>
+                    </select>
                   </div>
+                  <div class="mb-3">
+                    <label class="block text-xs font-bold text-text-primary mb-1.5">Problem / Condition Details (If
+                      any)</label>
+                    <textarea id="m_problems"
+                      class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
+                      rows="2" placeholder="Describe any existing defects..."></textarea>
+                  </div>
+                </div>
 
-                  <button type="submit"
-                    class="w-full py-2.5 bg-primary text-on-primary rounded-lg text-sm font-bold hover:bg-surface-tint transition-colors flex items-center justify-center gap-1.5 shadow-sm">
-                    <span class="material-symbols-outlined text-base">add_circle</span>
-                    Add to Master Inventory
-                  </button>
-                </form>
-              </div>
-            </div>
+                <!-- ACCESSORY FIELDS -->
+                <div id="accessory_fields" class="d-none">
+                  <div class="mb-3">
+                    <label class="block text-xs font-bold text-text-primary mb-1.5">Total Quantity</label>
+                    <input type="number" id="m_qty"
+                      class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none"
+                      min="1" placeholder="e.g. 5, 10, 50" />
+                  </div>
+                </div>
 
-            <!-- Live Stock Summary Card -->
-            <div class="lg:col-span-5 bg-background border border-surface-border rounded-xl shadow-sm overflow-hidden">
-              <div
-                class="px-3 py-3 md:px-5 md:py-3.5 border-b border-surface-border bg-surface flex items-center justify-between">
-                <h2 class="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
-                  <span class="material-symbols-outlined text-status-success text-lg">pie_chart</span>
-                  Stock Summary
-                </h2>
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-surface-container-high text-text-secondary"
-                  id="totalEquipmentTypes">0 Types</span>
-              </div>
-              <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs border-collapse" id="summaryTable">
-                  <thead>
-                    <tr class="bg-surface border-b border-surface-border text-text-secondary uppercase font-bold">
-                      <th class="px-2 py-2 md:px-4 md:py-3">Item Name</th>
-                      <th class="px-2 py-2 md:px-4 md:py-3 text-center">Total Qty</th>
-                      <th class="px-2 py-2 md:px-4 md:py-3 text-center">Available Stock</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-surface-border"></tbody>
-                </table>
-              </div>
+                <button type="submit"
+                  class="w-full py-2.5 bg-primary text-on-primary rounded-lg text-sm font-bold hover:bg-surface-tint transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+                  <span class="material-symbols-outlined text-base">add_circle</span>
+                  Add to Master Inventory
+                </button>
+              </form>
             </div>
           </div>
 
-          <!-- FULL WIDTH Detailed Master Stock Table Card -->
-          <div class="w-full bg-background border border-surface-border rounded-xl shadow-sm overflow-hidden">
-            <div class="px-5 py-3.5 border-b border-surface-border bg-surface flex items-center justify-between">
+          <!-- Live Stock Summary Card -->
+          <div class="bg-background border border-surface-border rounded-xl shadow-sm overflow-hidden mb-8">
+            <div
+              class="px-3 py-3 md:px-5 md:py-3.5 border-b border-surface-border bg-surface flex items-center justify-between">
+              <h2 class="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
+                <span class="material-symbols-outlined text-status-success text-lg">pie_chart</span>
+                Stock Summary
+              </h2>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-surface-container-high text-text-secondary"
+                id="totalEquipmentTypes">0 Types</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse" id="summaryTable">
+                <thead>
+                  <tr class="bg-surface border-b border-surface-border text-text-secondary uppercase font-bold">
+                    <th class="px-2 py-2 md:px-4 md:py-3">Item Name</th>
+                    <th class="px-2 py-2 md:px-4 md:py-3 text-center">Total Qty</th>
+                    <th class="px-2 py-2 md:px-4 md:py-3 text-center">Available Stock</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-surface-border"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Detailed Master Stock Table -->
+          <div class="bg-background border border-surface-border rounded-xl shadow-sm overflow-hidden mb-8 mt-8">
+            <div class="px-5 py-3.5 border-b border-surface-border bg-surface">
               <h2 class="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary text-lg">list_alt</span>
                 Master Stock Inventory & Integrity
               </h2>
             </div>
-            <div class="overflow-x-auto w-full max-h-[500px]">
+            <div class="overflow-x-auto max-h-96">
               <table class="w-full text-left text-xs border-collapse" id="masterTable">
                 <thead>
                   <tr class="bg-surface border-b border-surface-border text-text-secondary uppercase font-bold">
-                    <th class="px-4 py-3.5 whitespace-nowrap min-w-[150px]">Type / Serial</th>
-                    <th class="px-4 py-3.5 whitespace-nowrap min-w-[220px]">Item & Set Integrity</th>
-                    <th class="px-4 py-3.5 text-center whitespace-nowrap min-w-[120px]">Condition</th>
-                    <th class="px-4 py-3.5 text-center whitespace-nowrap min-w-[120px]">Status</th>
-                    <th class="px-4 py-3.5 text-right whitespace-nowrap min-w-[100px]">Action</th>
+                    <th class="px-2 py-2 md:px-4 md:py-3 whitespace-nowrap min-w-[140px]">Type / Serial</th>
+                    <th class="px-2 py-2 md:px-4 md:py-3 whitespace-nowrap min-w-[200px]">Item & Set Integrity</th>
+                    <th class="px-2 py-2 md:px-4 md:py-3 text-center whitespace-nowrap">Condition</th>
+                    <th class="px-2 py-2 md:px-4 md:py-3 text-center whitespace-nowrap">Status</th>
+                    <th class="px-2 py-2 md:px-4 md:py-3 text-right whitespace-nowrap">Action</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-surface-border"></tbody>
@@ -572,8 +568,8 @@
           </div>
         </div>
 
-        <!-- SECTION 2: OPERATIONS (ISSUE, TRANSFER, LOST) -->
-        <div class="flex flex-col gap-6 w-full pt-6 border-t border-surface-border" id="operations-section">
+        <!-- RIGHT PANEL: Issue, Inter-Set Transfer, Lost Item & Movement Logs (7 Columns) -->
+        <div class="lg:col-span-7 flex flex-col gap-6">
           <!-- Operations Navigation Tabs (Scrollable on Mobile) -->
           <div class="bg-background border border-surface-border rounded-xl shadow-sm p-1.5 overflow-hidden">
             <ul
@@ -867,8 +863,7 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                       <div>
-                        <label class="block text-xs font-bold text-text-primary mb-1.5">FIR / Report No (If
-                          any)</label>
+                        <label class="block text-xs font-bold text-text-primary mb-1.5">FIR / Report No (If any)</label>
                         <input type="text" id="l_fir"
                           class="w-full px-3 py-2 border border-surface-border rounded-lg text-sm bg-background outline-none"
                           placeholder="GD-102938 / N/A" />
@@ -918,84 +913,81 @@
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- SECTION 3: MOVEMENT LOGS & HISTORY (FULL WIDTH) -->
-      <div class="flex flex-col gap-6 w-full pt-6 border-t border-surface-border" id="history-section">
-        <!-- Movement Logs & History Header -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-          <h2 class="text-base font-bold text-primary flex items-center gap-2 m-0">
-            <span class="material-symbols-outlined text-xl">history</span>
-            Movement Logs & History
-          </h2>
-          <div class="relative w-full md:w-64">
-            <span
-              class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-text-secondary text-base">search</span>
-            <input type="text" id="searchLog"
-              class="w-full pl-8 pr-3 py-1.5 border border-surface-border rounded-lg text-xs bg-background outline-none"
-              placeholder="Search all logs..." onkeyup="renderLogs()" />
+          <!-- Movement Logs & History Header -->
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mt-4"
+            id="history-section">
+            <h2 class="text-base font-bold text-primary flex items-center gap-2 m-0">
+              <span class="material-symbols-outlined text-xl">history</span>
+              Movement Logs & History
+            </h2>
+            <div class="relative w-full md:w-64">
+              <span
+                class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-text-secondary text-base">search</span>
+              <input type="text" id="searchLog"
+                class="w-full pl-8 pr-3 py-1.5 border border-surface-border rounded-lg text-xs bg-background outline-none"
+                placeholder="Search all logs..." onkeyup="renderLogs()" />
+            </div>
           </div>
-        </div>
 
-        <!-- 2.1: Currently Issued / Return Pending Items Table (FULL WIDTH) -->
-        <div class="w-full bg-background border border-status-warning/30 rounded-xl shadow-sm overflow-hidden">
-          <div
-            class="px-5 py-3.5 border-b border-status-warning/20 bg-status-warning/10 flex justify-between items-center">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-status-warning flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-base">hourglass_top</span>
-              2.1 Return Pending / Currently Issued Items
-            </h3>
-            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-status-warning/20 text-status-warning"
-              id="pendingCount">0 Pending</span>
+          <!-- 2.1: Currently Issued / Return Pending Items Table -->
+          <div class="bg-background border border-status-warning/30 rounded-xl shadow-sm overflow-hidden mb-6">
+            <div
+              class="px-5 py-3.5 border-b border-status-warning/20 bg-status-warning/10 flex justify-between items-center">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-status-warning flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-base">hourglass_top</span>
+                2.1 Return Pending / Currently Issued Items
+              </h3>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-status-warning/20 text-status-warning"
+                id="pendingCount">0 Pending</span>
+            </div>
+            <div class="overflow-x-auto max-h-80">
+              <table class="w-full text-left text-xs border-collapse" id="pendingLogTable">
+                <thead>
+                  <tr class="bg-surface border-b border-surface-border text-text-secondary uppercase font-bold">
+                    <th class="px-4 py-3">Issue Date</th>
+                    <th class="px-4 py-3">Project & Location</th>
+                    <th class="px-4 py-3">People Involved</th>
+                    <th class="px-4 py-3">Item & Box Components</th>
+                    <th class="px-4 py-3">Issue Condition</th>
+                    <th class="px-4 py-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-surface-border"></tbody>
+              </table>
+            </div>
           </div>
-          <div class="overflow-x-auto w-full max-h-96">
-            <table class="w-full text-left text-xs border-collapse" id="pendingLogTable">
-              <thead>
-                <tr class="bg-surface border-b border-surface-border text-text-secondary uppercase font-bold">
-                  <th class="px-4 py-3.5 whitespace-nowrap min-w-[130px]">Issue Date</th>
-                  <th class="px-4 py-3.5 whitespace-nowrap min-w-[180px]">Project & Location</th>
-                  <th class="px-4 py-3.5 whitespace-nowrap min-w-[180px]">People Involved</th>
-                  <th class="px-4 py-3.5 whitespace-nowrap min-w-[220px]">Item & Box Components</th>
-                  <th class="px-4 py-3.5 whitespace-nowrap min-w-[140px]">Issue Condition</th>
-                  <th class="px-4 py-3.5 text-right whitespace-nowrap min-w-[100px]">Action</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-surface-border"></tbody>
-            </table>
-          </div>
-        </div>
 
-        <!-- 2.2: Already Returned & Incident History Table (FULL WIDTH) -->
-        <div class="w-full bg-background border border-status-success/30 rounded-xl shadow-sm overflow-hidden">
-          <div
-            class="px-5 py-3.5 border-b border-status-success/20 bg-status-success/10 flex justify-between items-center">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-status-success flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-base">task_alt</span>
-              2.2 Returned & Incident History Logs
-            </h3>
-            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-status-success/20 text-status-success"
-              id="returnedCount">0 Records</span>
-          </div>
-          <div class="overflow-x-auto w-full max-h-96">
-            <table class="w-full text-left text-xs border-collapse" id="returnedLogTable">
-              <thead>
-                <tr class="bg-surface border-b border-surface-border text-text-secondary uppercase font-bold">
-                  <th class="px-4 py-3.5 whitespace-nowrap min-w-[140px]">Dates / Type</th>
-                  <th class="px-4 py-3.5 whitespace-nowrap min-w-[160px]">Project</th>
-                  <th class="px-4 py-3.5 whitespace-nowrap min-w-[180px]">People Involved</th>
-                  <th class="px-4 py-3.5 whitespace-nowrap min-w-[220px]">Item & Box Components</th>
-                  <th class="px-4 py-3.5 whitespace-nowrap min-w-[180px]">Return Condition / Details</th>
-                  <th class="px-4 py-3.5 text-center whitespace-nowrap min-w-[100px]">Status</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-surface-border"></tbody>
-            </table>
+          <!-- 2.2: Already Returned & Incident History Table -->
+          <div class="bg-background border border-status-success/30 rounded-xl shadow-sm overflow-hidden">
+            <div
+              class="px-5 py-3.5 border-b border-status-success/20 bg-status-success/10 flex justify-between items-center">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-status-success flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-base">task_alt</span>
+                2.2 Returned & Incident History Logs
+              </h3>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-status-success/20 text-status-success"
+                id="returnedCount">0 Records</span>
+            </div>
+            <div class="overflow-x-auto max-h-80">
+              <table class="w-full text-left text-xs border-collapse" id="returnedLogTable">
+                <thead>
+                  <tr class="bg-surface border-b border-surface-border text-text-secondary uppercase font-bold">
+                    <th class="px-4 py-3">Dates / Type</th>
+                    <th class="px-4 py-3">Project</th>
+                    <th class="px-4 py-3">People Involved</th>
+                    <th class="px-4 py-3">Item & Box Components</th>
+                    <th class="px-4 py-3">Return Condition / Details</th>
+                    <th class="px-4 py-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-surface-border"></tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
-  </div>
-  </main>
+    </main>
   </div>
 
   <!-- FIREBASE SYNC MODAL -->
