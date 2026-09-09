@@ -128,15 +128,10 @@
 
     :hover::-webkit-scrollbar-thumb {
       background-color: rgba(100, 116, 139, 0.3);
-      /* Slate 500 */
     }
 
     ::-webkit-scrollbar-thumb:hover {
       background-color: rgba(100, 116, 139, 0.6);
-    }
-
-    .scroll-visible-on-hover:hover::-webkit-scrollbar-thumb {
-      background-color: rgba(100, 116, 139, 0.5);
     }
   </style>
 </head>
@@ -524,7 +519,7 @@
           </div>
 
           <!-- Live Stock Summary Card -->
-          <div class="bg-background border border-surface-border rounded-xl shadow-sm overflow-hidden mb-8 mt-8">
+          <div class="bg-background border border-surface-border rounded-xl shadow-sm overflow-hidden mb-8">
             <div
               class="px-3 py-3 md:px-5 md:py-3.5 border-b border-surface-border bg-surface flex items-center justify-between">
               <h2 class="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
@@ -549,7 +544,7 @@
           </div>
 
           <!-- Detailed Master Stock Table -->
-          <div class="bg-background border border-surface-border rounded-xl shadow-sm overflow-hidden mb-8">
+          <div class="bg-background border border-surface-border rounded-xl shadow-sm overflow-hidden mb-8 mt-8">
             <div class="px-5 py-3.5 border-b border-surface-border bg-surface">
               <h2 class="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary text-lg">list_alt</span>
@@ -560,11 +555,11 @@
               <table class="w-full text-left text-xs border-collapse" id="masterTable">
                 <thead>
                   <tr class="bg-surface border-b border-surface-border text-text-secondary uppercase font-bold">
-                    <th class="px-2 py-2 md:px-4 md:py-3">Type / Serial</th>
-                    <th class="px-2 py-2 md:px-4 md:py-3">Item & Set Integrity</th>
-                    <th class="px-2 py-2 md:px-4 md:py-3 text-center">Condition</th>
-                    <th class="px-2 py-2 md:px-4 md:py-3 text-center">Status</th>
-                    <th class="px-2 py-2 md:px-4 md:py-3 text-right">Action</th>
+                    <th class="px-2 py-2 md:px-4 md:py-3 whitespace-nowrap min-w-[140px]">Type / Serial</th>
+                    <th class="px-2 py-2 md:px-4 md:py-3 whitespace-nowrap min-w-[200px]">Item & Set Integrity</th>
+                    <th class="px-2 py-2 md:px-4 md:py-3 text-center whitespace-nowrap">Condition</th>
+                    <th class="px-2 py-2 md:px-4 md:py-3 text-center whitespace-nowrap">Status</th>
+                    <th class="px-2 py-2 md:px-4 md:py-3 text-right whitespace-nowrap">Action</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-surface-border"></tbody>
