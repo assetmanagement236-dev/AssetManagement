@@ -278,6 +278,32 @@
           </button>
           <button
             class="nav-tab-btn flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left"
+            data-target="employee-tab"
+            onclick="
+              switchToTab('employee-tab');
+              toggleMobileSidebar();
+            "
+          >
+            <span class="nav-icon material-symbols-outlined text-lg"
+              >badge</span
+            >
+            <span>Staff Directory</span>
+          </button>
+          <button
+            class="nav-tab-btn flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left"
+            data-target="attendance-tab"
+            onclick="
+              switchToTab('attendance-tab');
+              toggleMobileSidebar();
+            "
+          >
+            <span class="nav-icon material-symbols-outlined text-lg"
+              >calendar_month</span
+            >
+            <span>Staff Attendance</span>
+          </button>
+          <button
+            class="nav-tab-btn flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left"
             data-target="issue-tab"
             onclick="
               switchToTab('issue-tab');
@@ -303,45 +329,6 @@
             <span>Inter-Set Transfers</span>
           </button>
           <button
-            class="nav-tab-btn flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left"
-            data-target="history-section"
-            onclick="
-              switchToTab('history-section');
-              toggleMobileSidebar();
-            "
-          >
-            <span class="nav-icon material-symbols-outlined text-lg"
-              >history</span
-            >
-            <span>Return & History</span>
-          </button>
-          <button
-            class="nav-tab-btn flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left"
-            data-target="attendance-tab"
-            onclick="
-              switchToTab('attendance-tab');
-              toggleMobileSidebar();
-            "
-          >
-            <span class="nav-icon material-symbols-outlined text-lg"
-              >calendar_month</span
-            >
-            <span>Staff Attendance</span>
-          </button>
-          <button
-            class="nav-tab-btn flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left"
-            data-target="employee-tab"
-            onclick="
-              switchToTab('employee-tab');
-              toggleMobileSidebar();
-            "
-          >
-            <span class="nav-icon material-symbols-outlined text-lg"
-              >badge</span
-            >
-            <span>Staff Directory</span>
-          </button>
-          <button
             class="nav-tab-btn flex items-center gap-3 px-3 py-2 text-status-alert hover:bg-status-alert/10 transition-all rounded-lg text-xs w-full text-left"
             data-target="lost-tab"
             onclick="
@@ -353,6 +340,19 @@
               >report</span
             >
             <span>Report Lost</span>
+          </button>
+          <button
+            class="nav-tab-btn flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container-low transition-all rounded-lg text-xs w-full text-left"
+            data-target="history-section"
+            onclick="
+              switchToTab('history-section');
+              toggleMobileSidebar();
+            "
+          >
+            <span class="nav-icon material-symbols-outlined text-lg"
+              >history</span
+            >
+            <span>Return & History</span>
           </button>
           <button
             id="pwaInstallSidebarBtn"
@@ -876,30 +876,16 @@
               >
                 <li class="nav-item shrink-0" role="presentation">
                   <button
-                    class="nav-link px-3.5 py-2 text-xs font-bold rounded-lg active flex items-center justify-center gap-1.5 whitespace-nowrap"
-                    id="issue-tab"
+                    class="nav-link px-3.5 py-2 text-xs font-bold rounded-lg text-primary flex items-center justify-center gap-1.5 whitespace-nowrap"
+                    id="employee-tab"
                     data-bs-toggle="tab"
-                    data-bs-target="#issue-panel"
+                    data-bs-target="#employee-panel"
                     type="button"
                   >
                     <span class="material-symbols-outlined text-base"
-                      >output</span
+                      >badge</span
                     >
-                    2. Issue Equipment
-                  </button>
-                </li>
-                <li class="nav-item shrink-0" role="presentation">
-                  <button
-                    class="nav-link px-3.5 py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 text-status-warning whitespace-nowrap"
-                    id="transfer-tab"
-                    data-bs-toggle="tab"
-                    data-bs-target="#transfer-panel"
-                    type="button"
-                  >
-                    <span class="material-symbols-outlined text-base"
-                      >move_down</span
-                    >
-                    3. Inter-Set Transfer
+                    2. Staff Directory
                   </button>
                 </li>
                 <li class="nav-item shrink-0" role="presentation">
@@ -913,21 +899,35 @@
                     <span class="material-symbols-outlined text-base"
                       >calendar_month</span
                     >
-                    4. Staff Attendance
+                    3. Staff Attendance
                   </button>
                 </li>
                 <li class="nav-item shrink-0" role="presentation">
                   <button
-                    class="nav-link px-3.5 py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 text-primary whitespace-nowrap"
-                    id="employee-tab"
+                    class="nav-link px-3.5 py-2 text-xs font-bold rounded-lg active flex items-center justify-center gap-1.5 whitespace-nowrap"
+                    id="issue-tab"
                     data-bs-toggle="tab"
-                    data-bs-target="#employee-panel"
+                    data-bs-target="#issue-panel"
                     type="button"
                   >
                     <span class="material-symbols-outlined text-base"
-                      >badge</span
+                      >output</span
                     >
-                    5. Staff Directory
+                    4. Issue Equipment
+                  </button>
+                </li>
+                <li class="nav-item shrink-0" role="presentation">
+                  <button
+                    class="nav-link px-3.5 py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 text-status-warning whitespace-nowrap"
+                    id="transfer-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#transfer-panel"
+                    type="button"
+                  >
+                    <span class="material-symbols-outlined text-base"
+                      >move_down</span
+                    >
+                    5. Inter-Set Transfer
                   </button>
                 </li>
                 <li class="nav-item shrink-0" role="presentation">
