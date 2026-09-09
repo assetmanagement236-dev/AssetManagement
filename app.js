@@ -3,6 +3,9 @@ let inventory = [];
 let issueLogs = [];
 let borrowedTransfers = [];
 let customSuggestions = [];
+let employees = [];
+let attendanceLogs = [];
+let editingEmpId = null;
 let currentTeamMembers = [];
 let currentBoxItems = [];
 let pendingReset = false;
@@ -20,6 +23,9 @@ function loadData() {
     JSON.parse(localStorage.getItem(`eq_transfers_${uid}`)) || [];
   customSuggestions =
     JSON.parse(localStorage.getItem(`eq_custom_suggestions_${uid}`)) || [];
+  employees = JSON.parse(localStorage.getItem(`eq_employees_${uid}`)) || [];
+  attendanceLogs =
+    JSON.parse(localStorage.getItem(`eq_attendance_${uid}`)) || [];
 
   if (typeof renderAll === "function") {
     renderAll();
@@ -30,12 +36,18 @@ function loadData() {
 loadData();
 
 // Set Default Dates
-document.getElementById("i_date").valueAsDate = new Date();
-document.getElementById("l_date").valueAsDate = new Date();
-document.getElementById("r_date").valueAsDate = new Date();
+if (document.getElementById("i_date"))
+  document.getElementById("i_date").valueAsDate = new Date();
+if (document.getElementById("l_date"))
+  document.getElementById("l_date").valueAsDate = new Date();
+if (document.getElementById("r_date"))
+  document.getElementById("r_date").valueAsDate = new Date();
+if (document.getElementById("att_date_filter"))
+  document.getElementById("att_date_filter").valueAsDate = new Date();
 
 const today = new Date();
-document.getElementById("exp_month").value = today.toISOString().slice(0, 7);
+if (document.getElementById("exp_month"))
+  document.getElementById("exp_month").value = today.toISOString().slice(0, 7);
 
 function saveData() {
   const uid =
@@ -53,6 +65,8 @@ function saveData() {
     `eq_custom_suggestions_${uid}`,
     JSON.stringify(customSuggestions),
   );
+  localStorage.setItem(`eq_employees_${uid}`, JSON.stringify(employees));
+  localStorage.setItem(`eq_attendance_${uid}`, JSON.stringify(attendanceLogs));
 
   // Sync with Firebase Firestore if connected
   if (typeof syncToFirebase === "function") {
@@ -1239,6 +1253,11 @@ function renderAll() {
   renderIssueDropdowns();
   renderBorrowedList();
   renderLogs();
+  if (typeof updateEmployeeDatalist === "function") updateEmployeeDatalist();
+  if (typeof renderEmployees === "function") renderEmployees();
+  if (typeof renderAttendancePanel === "function") renderAttendancePanel();
+  if (typeof updateSourceBoxAccessoriesDropdown === "function")
+    updateSourceBoxAccessoriesDropdown();
 }
 
 function renderSummaryTable() {
@@ -1294,10 +1313,11 @@ function renderSummaryTable() {
 
   keys.forEach((name) => {
     const avail = summary[name].available;
-    const badgeStyle = avail > 0 
-      ? 'bg-status-success/10 text-status-success border border-status-success/30' 
-      : 'bg-status-alert/10 text-status-alert border border-status-alert/30';
-    
+    const badgeStyle =
+      avail > 0
+        ? "bg-status-success/10 text-status-success border border-status-success/30"
+        : "bg-status-alert/10 text-status-alert border border-status-alert/30";
+
     tbody.innerHTML += `
       <tr class="hover:bg-surface-container-low/50 transition-colors">
         <td class="px-4 py-3 align-middle text-left">
@@ -1361,13 +1381,15 @@ function renderMasterTable() {
       }
 
       const serialsStr = formatSerialText(item.serial, item.equipmentSerial);
-      const serialsHtml = serialsStr !== "N/A"
-        ? `<div class="font-mono text-xs text-primary font-bold tracking-tight leading-snug">${serialsStr}</div>`
-        : `<span class="text-xs text-text-secondary font-mono">N/A</span>`;
+      const serialsHtml =
+        serialsStr !== "N/A"
+          ? `<div class="font-mono text-xs text-primary font-bold tracking-tight leading-snug">${serialsStr}</div>`
+          : `<span class="text-xs text-text-secondary font-mono">N/A</span>`;
 
-      const modelHtml = item.model && item.model !== "N/A"
-        ? `<div class="text-[11px] text-text-secondary font-medium leading-snug mt-1">Model: <span class="font-semibold text-text-primary">${item.model}</span></div>`
-        : "";
+      const modelHtml =
+        item.model && item.model !== "N/A"
+          ? `<div class="text-[11px] text-text-secondary font-medium leading-snug mt-1">Model: <span class="font-semibold text-text-primary">${item.model}</span></div>`
+          : "";
 
       tbody.innerHTML += `
         <tr class="hover:bg-surface-container-low/50 transition-colors">
@@ -1604,51 +1626,134 @@ function triggerResetWorkflow() {
   }
 }
 
-// --- EXPORT MODAL & CSV EXPORT WITH DYNAMIC DAILY TIMESTAMP ---
+// --- EXPORT MODAL & CSV EXPORT WITH DYNAMIC DAILY TIMESTAMP & DATE RANGE ---
+function toggleExportScopeFields() {
+  const scopeEl = document.querySelector('input[name="exportScope"]:checked');
+  const scope = scopeEl ? scopeEl.value : "ALL";
+  const monthDiv = document.getElementById("exp_month_container");
+  const rangeDiv = document.getElementById("exp_date_range_container");
+  const monthInput = document.getElementById("exp_month");
+  const startInput = document.getElementById("exp_start_date");
+  const endInput = document.getElementById("exp_end_date");
+
+  if (scope === "DATE_RANGE") {
+    if (monthDiv) monthDiv.classList.add("hidden");
+    if (rangeDiv) rangeDiv.classList.remove("hidden");
+    if (monthInput) monthInput.removeAttribute("required");
+    if (startInput) startInput.setAttribute("required", "required");
+    if (endInput) endInput.setAttribute("required", "required");
+  } else {
+    if (monthDiv) monthDiv.classList.remove("hidden");
+    if (rangeDiv) rangeDiv.classList.add("hidden");
+    if (monthInput) monthInput.setAttribute("required", "required");
+    if (startInput) startInput.removeAttribute("required");
+    if (endInput) endInput.removeAttribute("required");
+  }
+}
+
 function openExportModal() {
+  const now = new Date();
+  const yearMonth = now.toISOString().substring(0, 7);
+  const todayStr = now.toISOString().substring(0, 10);
+
+  const expMonth = document.getElementById("exp_month");
+  if (expMonth && !expMonth.value) expMonth.value = yearMonth;
+
+  const startDateInput = document.getElementById("exp_start_date");
+  const endDateInput = document.getElementById("exp_end_date");
+  if (startDateInput && !startDateInput.value) {
+    startDateInput.value = `${yearMonth}-01`;
+  }
+  if (endDateInput && !endDateInput.value) {
+    endDateInput.value = todayStr;
+  }
+
+  toggleExportScopeFields();
   exportModalObj = new bootstrap.Modal(document.getElementById("exportModal"));
   exportModalObj.show();
 }
 
 function processExport(e) {
   e.preventDefault();
+  const scopeEl = document.querySelector('input[name="exportScope"]:checked');
+  const scope = scopeEl ? scopeEl.value : "ALL";
   const selectedMonth = document.getElementById("exp_month").value;
-  const scope = document.querySelector(
-    'input[name="exportScope"]:checked',
-  ).value;
-
-  if (!selectedMonth) {
-    alert("Please select a valid month!");
-    return;
-  }
+  const startDate = document.getElementById("exp_start_date").value;
+  const endDate = document.getElementById("exp_end_date").value;
 
   let logsToExport = [];
   let inventoryToExport = [];
+  let transfersToExport = [];
+  let attendanceToExport = [];
 
-  if (scope === "ALL") {
+  if (scope === "DATE_RANGE") {
+    if (!startDate || !endDate) {
+      alert("Please select both Start Date and End Date!");
+      return;
+    }
+    if (startDate > endDate) {
+      alert("Start Date cannot be later than End Date!");
+      return;
+    }
+
+    logsToExport = issueLogs.filter((l) => {
+      const issueD = l.issueDate ? l.issueDate.substring(0, 10) : "";
+      const returnD = l.returnDate ? l.returnDate.substring(0, 10) : "";
+      return (
+        (issueD >= startDate && issueD <= endDate) ||
+        (returnD >= startDate && returnD <= endDate)
+      );
+    });
+    inventoryToExport = [...inventory];
+    transfersToExport = borrowedTransfers.filter((t) => {
+      const d = t.date ? t.date.substring(0, 10) : "";
+      return d >= startDate && d <= endDate;
+    });
+    if (typeof attendanceLogs !== "undefined") {
+      attendanceToExport = attendanceLogs.filter((a) => {
+        const d = a.date ? a.date.substring(0, 10) : "";
+        return d >= startDate && d <= endDate;
+      });
+    }
+  } else if (scope === "ALL") {
+    if (!selectedMonth) {
+      alert("Please select a valid month!");
+      return;
+    }
     logsToExport = issueLogs.filter(
       (l) => l.issueDate.substring(0, 7) <= selectedMonth,
     );
     inventoryToExport = [...inventory];
+    transfersToExport = [...borrowedTransfers];
+    if (typeof attendanceLogs !== "undefined")
+      attendanceToExport = [...attendanceLogs];
   } else {
+    // NEW
+    if (!selectedMonth) {
+      alert("Please select a valid month!");
+      return;
+    }
     logsToExport = issueLogs.filter(
       (l) => l.issueDate.substring(0, 7) <= selectedMonth && !l.exported,
     );
     inventoryToExport = inventory.filter((i) => !i.exported);
+    transfersToExport = borrowedTransfers.filter((t) => !t.exported);
+    if (typeof attendanceLogs !== "undefined")
+      attendanceToExport = attendanceLogs.filter((a) => !a.exported);
   }
 
   if (
     logsToExport.length === 0 &&
     inventoryToExport.length === 0 &&
-    borrowedTransfers.length === 0
+    transfersToExport.length === 0 &&
+    attendanceToExport.length === 0
   ) {
-    alert("No new or matching data available for the selected criteria!");
+    alert("No data available for the selected export criteria!");
     return;
   }
 
   const now = new Date();
   const generatedAt = now.toLocaleString();
-
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
@@ -1659,12 +1764,22 @@ function processExport(e) {
   let csv = `========================================================================================================\n`;
   csv += `                               EQUIPMENT & ASSET MANAGEMENT REPORT                                      \n`;
   csv += `========================================================================================================\n`;
-  csv += `Report Month : ${selectedMonth}\n`;
+  if (scope === "DATE_RANGE") {
+    csv += `Report Range : ${startDate} to ${endDate}\n`;
+  } else {
+    csv += `Report Month : ${selectedMonth}\n`;
+  }
   csv += `Generated On : ${generatedAt}\n`;
-  csv += `Data Scope   : ${scope === "ALL" ? "ALL HISTORICAL RECORDS" : "ONLY NEW / UN-DOWNLOADED DATA"}\n`;
+  csv += `Data Scope   : ${
+    scope === "ALL"
+      ? "ALL HISTORICAL RECORDS"
+      : scope === "NEW"
+      ? "ONLY NEW / UN-DOWNLOADED DATA"
+      : `CUSTOM DATE RANGE (${startDate} TO ${endDate})`
+  }\n`;
   csv += `========================================================================================================\n\n`;
 
-  // PART 1
+  // PART 1: MASTER STOCK INVENTORY & SET INTEGRITY
   csv += `--------------------------------------------------------------------------------------------------------\n`;
   csv += `PART 1: MASTER STOCK INVENTORY & SET INTEGRITY\n`;
   csv += `--------------------------------------------------------------------------------------------------------\n`;
@@ -1699,11 +1814,12 @@ function processExport(e) {
   csv += `PART 1.5: INTER-SET BORROWED / TRANSFERRED ACCESSORIES\n`;
   csv += `--------------------------------------------------------------------------------------------------------\n`;
   csv += `"TRANSFER DATE","ACCESSORY ITEM","QTY","SOURCE SET","DESTINATION SET","REASON","STATUS"\n`;
-  if (borrowedTransfers.length === 0) {
+  if (transfersToExport.length === 0) {
     csv += `"No inter-set transfers recorded."\n`;
   } else {
-    borrowedTransfers.forEach((t) => {
+    transfersToExport.forEach((t) => {
       csv += `"${t.date}","${t.itemName}","${t.qty}","${t.sourceName} (${t.sourceSerial})","${t.destName} (${t.destSerial})","${t.reason}","${t.active ? "OUTSTANDING BORROWED" : "RETURNED TO ORIGINAL SET"}"\n`;
+      t.exported = true;
     });
   }
   csv += `\n\n`;
@@ -1781,10 +1897,24 @@ function processExport(e) {
       csv += `"${name}","${summary[name].type}","${total}","${avail}","${issued}"\n`;
     });
   }
+  csv += `\n\n`;
+
+  // PART 4: DAILY STAFF ATTENDANCE LOGS
+  csv += `--------------------------------------------------------------------------------------------------------\n`;
+  csv += `PART 4: DAILY STAFF ATTENDANCE LOGS\n`;
+  csv += `--------------------------------------------------------------------------------------------------------\n`;
+  csv += `"DATE","EMPLOYEE NAME","DUTY TYPE","ATTENDANCE STATUS","PROJECT / LOCATION","CHECK-IN TIME","CHECK-OUT TIME"\n`;
+  if (attendanceToExport.length === 0) {
+    csv += `"No attendance records in this period."\n`;
+  } else {
+    attendanceToExport.forEach((a) => {
+      csv += `"${a.date}","${a.empName}","${a.dutyType || "Office"}","${a.status}","${a.projectLocation || "N/A"}","${a.inTime || "N/A"}","${a.outTime || "N/A"}"\n`;
+      a.exported = true;
+    });
+  }
   csv += `\n=================================== END OF REPORT ===================================\n`;
 
-  localStorage.setItem("eq_v10_inventory", JSON.stringify(inventory));
-  localStorage.setItem("eq_v10_logs", JSON.stringify(issueLogs));
+  saveData();
 
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = window.URL.createObjectURL(blob);
@@ -1954,4 +2084,471 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-// Removed COMPANY ACCESS SECURITY & OPERATOR SESSION MANAGEMENT as requested by the user.
+// --- STAFF DIRECTORY MANAGEMENT ---
+function addEmployee(e) {
+  e.preventDefault();
+  const nameInput = document.getElementById("emp_name");
+  const desigInput = document.getElementById("emp_designation");
+  const phoneInput = document.getElementById("emp_phone");
+
+  if (!nameInput) return;
+
+  const name = nameInput.value.trim();
+  const desig = desigInput.value.trim() || "Field Staff";
+  const phone = phoneInput.value.trim() || "N/A";
+
+  if (!name) return;
+
+  if (editingEmpId) {
+    const empIndex = employees.findIndex((emp) => emp.id === editingEmpId);
+    if (empIndex !== -1) {
+      employees[empIndex].name = name;
+      employees[empIndex].designation = desig;
+      employees[empIndex].phone = phone;
+    }
+    editingEmpId = null;
+  } else {
+    employees.push({
+      id: Date.now(),
+      name: name,
+      designation: desig,
+      phone: phone,
+      addedDate: new Date().toISOString().slice(0, 10),
+    });
+  }
+
+  nameInput.value = "";
+  desigInput.value = "";
+  phoneInput.value = "";
+
+  saveData();
+  alert(`✅ Employee "${name}" saved to directory!`);
+}
+
+function renderEmployees() {
+  const tbody = document.querySelector("#employeeTable tbody");
+  const badge = document.getElementById("totalEmployeesBadge");
+  if (!tbody) return;
+
+  tbody.innerHTML = "";
+  if (badge) badge.innerText = `${employees.length} Staff`;
+
+  if (employees.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-3">No employees registered yet. Add team members above!</td></tr>`;
+    return;
+  }
+
+  // Find active assignments from active issue logs
+  const activeAssignments = {};
+  issueLogs.forEach((log) => {
+    if (log.active) {
+      if (log.leader) activeAssignments[log.leader.toLowerCase()] = log.projectId || "Field Site";
+      if (log.receiver) activeAssignments[log.receiver.toLowerCase()] = log.projectId || "Field Site";
+      if (log.members && Array.isArray(log.members)) {
+        log.members.forEach((m) => {
+          activeAssignments[m.toLowerCase()] = log.projectId || "Field Site";
+        });
+      }
+    }
+  });
+
+  employees.forEach((emp) => {
+    const assignedProject = activeAssignments[emp.name.toLowerCase()];
+    const statusBadge = assignedProject
+      ? `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20"><i class="bi bi-briefcase me-1"></i>Assigned (${assignedProject})</span>`
+      : `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-status-success/10 text-status-success border border-status-success/20"><i class="bi bi-check-circle me-1"></i>Available</span>`;
+
+    tbody.innerHTML += `
+      <tr class="hover:bg-surface-container-low/50 transition-colors">
+        <td class="px-4 py-3 align-middle">
+          <div class="font-bold text-text-primary text-xs sm:text-sm">${emp.name}</div>
+          <div class="text-[11px] text-text-secondary">${emp.designation} | Ph: ${emp.phone || "N/A"}</div>
+        </td>
+        <td class="px-4 py-3 align-middle text-center">${statusBadge}</td>
+        <td class="px-4 py-3 align-middle text-right">
+          <button class="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors inline-flex items-center justify-center border border-primary/20 me-1" onclick="editEmployee(${emp.id})" title="Edit Employee">
+            <span class="material-symbols-outlined text-base">edit</span>
+          </button>
+          <button class="p-1.5 text-status-alert hover:bg-status-alert/15 rounded-lg transition-colors inline-flex items-center justify-center border border-status-alert/20" onclick="deleteEmployee(${emp.id})" title="Delete Employee">
+            <span class="material-symbols-outlined text-base">delete</span>
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+function editEmployee(id) {
+  const emp = employees.find((e) => e.id === id);
+  if (!emp) return;
+  document.getElementById("emp_name").value = emp.name;
+  document.getElementById("emp_designation").value = emp.designation;
+  document.getElementById("emp_phone").value = emp.phone;
+  editingEmpId = id;
+}
+
+function deleteEmployee(id) {
+  if (confirm("Are you sure you want to remove this employee from directory?")) {
+    employees = employees.filter((e) => e.id !== id);
+    saveData();
+    if (typeof deleteFromFirebase === "function") {
+      deleteFromFirebase("asset_employees", id);
+    }
+  }
+}
+
+function updateEmployeeDatalist() {
+  const datalist = document.getElementById("employeeDatalist");
+  if (!datalist) return;
+  datalist.innerHTML = "";
+  employees.forEach((emp) => {
+    const opt = document.createElement("option");
+    opt.value = emp.name;
+    opt.label = `${emp.designation}`;
+    datalist.appendChild(opt);
+  });
+}
+
+// --- ATTENDANCE MANAGEMENT ---
+function renderAttendancePanel() {
+  const dateInput = document.getElementById("att_date_filter");
+  if (!dateInput) return;
+
+  if (!dateInput.value) {
+    dateInput.valueAsDate = new Date();
+  }
+
+  const selectedDate = dateInput.value;
+  const assignedTbody = document.querySelector("#assignedAttendanceTable tbody");
+  const availableTbody = document.querySelector("#availableAttendanceTable tbody");
+
+  if (!assignedTbody || !availableTbody) return;
+
+  assignedTbody.innerHTML = "";
+  availableTbody.innerHTML = "";
+
+  // Identify assigned vs available employees
+  const activeAssignments = {};
+  issueLogs.forEach((log) => {
+    if (log.active) {
+      if (log.leader) activeAssignments[log.leader.toLowerCase()] = log.projectId || "Field Site";
+      if (log.receiver) activeAssignments[log.receiver.toLowerCase()] = log.projectId || "Field Site";
+      if (log.members && Array.isArray(log.members)) {
+        log.members.forEach((m) => {
+          activeAssignments[m.toLowerCase()] = log.projectId || "Field Site";
+        });
+      }
+    }
+  });
+
+  const existingLogsForDate = attendanceLogs.filter((l) => l.date === selectedDate);
+  const logMap = {};
+  existingLogsForDate.forEach((l) => {
+    logMap[l.empId] = l;
+  });
+
+  let assignedCount = 0;
+  let availableCount = 0;
+
+  employees.forEach((emp) => {
+    const isAssigned = !!activeAssignments[emp.name.toLowerCase()];
+    const existingLog = logMap[emp.id] || {};
+    const status = existingLog.status || (isAssigned ? "Present" : "Present");
+    const inTime = existingLog.inTime || "09:00";
+    const outTime = existingLog.outTime || "18:00";
+    const notes = existingLog.notes || "";
+
+    const rowHtml = `
+      <tr class="hover:bg-surface-container-low/50 transition-colors">
+        <td class="px-3 py-2.5 align-middle">
+          <div class="font-bold text-text-primary text-xs">${emp.name}</div>
+          <input type="hidden" name="emp_id[]" value="${emp.id}" />
+          <input type="hidden" name="emp_name_${emp.id}" value="${emp.name}" />
+          <input type="hidden" name="assign_type_${emp.id}" value="${isAssigned ? "Assigned Field" : "Available Office"}" />
+        </td>
+        <td class="px-3 py-2.5 align-middle">
+          <span class="text-xs text-text-secondary font-medium">${isAssigned ? activeAssignments[emp.name.toLowerCase()] : emp.designation}</span>
+        </td>
+        <td class="px-3 py-2.5 align-middle">
+          <select name="status_${emp.id}" class="px-2 py-1 border border-surface-border rounded-lg text-xs bg-background outline-none font-bold">
+            <option value="Present" ${status === "Present" ? "selected" : ""}>✅ Present</option>
+            <option value="Absent" ${status === "Absent" ? "selected" : ""}>❌ Absent</option>
+            <option value="Late" ${status === "Late" ? "selected" : ""}>⚠️ Late</option>
+            <option value="Half Day" ${status === "Half Day" ? "selected" : ""}>⏳ Half Day</option>
+            <option value="Leave" ${status === "Leave" ? "selected" : ""}>🏖️ Leave</option>
+          </select>
+        </td>
+        <td class="px-3 py-2.5 align-middle">
+          <input type="time" name="in_time_${emp.id}" value="${inTime}" class="px-2 py-1 border border-surface-border rounded-lg text-xs bg-background outline-none font-mono" />
+        </td>
+        <td class="px-3 py-2.5 align-middle">
+          <input type="time" name="out_time_${emp.id}" value="${outTime}" class="px-2 py-1 border border-surface-border rounded-lg text-xs bg-background outline-none font-mono" />
+        </td>
+        <td class="px-3 py-2.5 align-middle">
+          <input type="text" name="notes_${emp.id}" value="${notes}" placeholder="Optional notes..." class="w-full px-2 py-1 border border-surface-border rounded-lg text-xs bg-background outline-none" />
+        </td>
+      </tr>
+    `;
+
+    if (isAssigned) {
+      assignedTbody.innerHTML += rowHtml;
+      assignedCount++;
+    } else {
+      availableTbody.innerHTML += rowHtml;
+      availableCount++;
+    }
+  });
+
+  if (assignedCount === 0) {
+    assignedTbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-2.5">No staff currently assigned to active field projects.</td></tr>`;
+  }
+  if (availableCount === 0) {
+    availableTbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-2.5">No available staff in office directory.</td></tr>`;
+  }
+
+  renderAttendanceSummary();
+  renderAttendanceHistory();
+}
+
+function saveAttendanceBatch(e) {
+  e.preventDefault();
+  const dateInput = document.getElementById("att_date_filter");
+  if (!dateInput || !dateInput.value) return;
+
+  const date = dateInput.value;
+  const empIds = document.querySelectorAll('input[name="emp_id[]"]');
+
+  empIds.forEach((input) => {
+    const empId = parseInt(input.value);
+    const empName = document.querySelector(`input[name="emp_name_${empId}"]`)?.value || "";
+    const assignType = document.querySelector(`input[name="assign_type_${empId}"]`)?.value || "Office";
+    const status = document.querySelector(`select[name="status_${empId}"]`)?.value || "Present";
+    const inTime = document.querySelector(`input[name="in_time_${empId}"]`)?.value || "";
+    const outTime = document.querySelector(`input[name="out_time_${empId}"]`)?.value || "";
+    const notes = document.querySelector(`input[name="notes_${empId}"]`)?.value || "";
+
+    const existingIdx = attendanceLogs.findIndex((l) => l.date === date && l.empId === empId);
+
+    const logRecord = {
+      id: existingIdx !== -1 ? attendanceLogs[existingIdx].id : Date.now() + Math.floor(Math.random() * 1000),
+      date: date,
+      empId: empId,
+      empName: empName,
+      assignType: assignType,
+      status: status,
+      inTime: inTime,
+      outTime: outTime,
+      notes: notes,
+    };
+
+    if (existingIdx !== -1) {
+      attendanceLogs[existingIdx] = logRecord;
+    } else {
+      attendanceLogs.push(logRecord);
+    }
+  });
+
+  saveData();
+  alert(`✅ Daily attendance for ${date} saved successfully!`);
+}
+
+function renderAttendanceSummary() {
+  const tbody = document.querySelector("#attendanceSummaryTable tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  if (employees.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-2.5">No employee records.</td></tr>`;
+    return;
+  }
+
+  employees.forEach((emp) => {
+    const empLogs = attendanceLogs.filter((l) => l.empId === emp.id);
+    const totalRecorded = empLogs.length;
+    const totalPresent = empLogs.filter((l) => l.status === "Present" || l.status === "Late" || l.status === "Half Day").length;
+
+    tbody.innerHTML += `
+      <tr class="hover:bg-surface-container-low/50 transition-colors">
+        <td class="px-4 py-2.5 font-bold text-text-primary">${emp.name}</td>
+        <td class="px-4 py-2.5 text-text-secondary">${emp.designation}</td>
+        <td class="px-4 py-2.5 text-center font-bold text-status-success">${totalPresent} Days</td>
+        <td class="px-4 py-2.5 text-center font-mono">${totalRecorded} Days</td>
+      </tr>
+    `;
+  });
+}
+
+function renderAttendanceHistory() {
+  const tbody = document.querySelector("#attendanceHistoryTable tbody");
+  const queryInput = document.getElementById("searchAttendance");
+  if (!tbody) return;
+
+  const query = queryInput ? queryInput.value.toLowerCase() : "";
+  tbody.innerHTML = "";
+
+  const filteredLogs = attendanceLogs.filter(
+    (l) =>
+      l.date.includes(query) ||
+      l.empName.toLowerCase().includes(query) ||
+      l.status.toLowerCase().includes(query) ||
+      (l.notes && l.notes.toLowerCase().includes(query))
+  );
+
+  if (filteredLogs.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-2.5">No attendance history records found.</td></tr>`;
+    return;
+  }
+
+  filteredLogs.sort((a, b) => b.date.localeCompare(a.date));
+
+  filteredLogs.forEach((l) => {
+    let statusClass = "bg-status-success/10 text-status-success border-status-success/30";
+    if (l.status === "Absent") statusClass = "bg-status-alert/10 text-status-alert border-status-alert/30";
+    if (l.status === "Late" || l.status === "Half Day") statusClass = "bg-status-warning/10 text-status-warning border-status-warning/30";
+    if (l.status === "Leave") statusClass = "bg-primary/10 text-primary border-primary/30";
+
+    tbody.innerHTML += `
+      <tr class="hover:bg-surface-container-low/50 transition-colors">
+        <td class="px-3 py-2.5 font-bold text-text-primary font-mono">${l.date}</td>
+        <td class="px-3 py-2.5 font-bold text-text-primary">${l.empName}</td>
+        <td class="px-3 py-2.5 text-text-secondary">${l.assignType || "Office"}</td>
+        <td class="px-3 py-2.5"><span class="px-2 py-0.5 rounded text-xs font-bold border ${statusClass}">${l.status}</span></td>
+        <td class="px-3 py-2.5 font-mono text-text-secondary">${l.inTime || "--:--"} to ${l.outTime || "--:--"}</td>
+        <td class="px-3 py-2.5 text-text-secondary">${l.notes || "-"}</td>
+      </tr>
+    `;
+  });
+}
+
+// --- INTER-SET ACCESSORY TRANSFER LOGIC ---
+function updateSourceBoxAccessoriesDropdown() {
+  const fromSelect = document.getElementById("t_from_set");
+  const accSelect = document.getElementById("t_accessory_item");
+  const toSelect = document.getElementById("t_to_set");
+
+  if (!fromSelect || !accSelect || !toSelect) return;
+
+  const currentFrom = fromSelect.value;
+  const currentTo = toSelect.value;
+
+  fromSelect.innerHTML = '<option value="">-- Select Source Set --</option>';
+  toSelect.innerHTML = '<option value="">-- Select Destination Set --</option>';
+
+  const equipmentSets = inventory.filter(
+    (i) => i.type === "EQUIPMENT" && i.boxItems && i.boxItems.length > 0
+  );
+
+  equipmentSets.forEach((item) => {
+    const serialsStr = formatSerialText(item.serial, item.equipmentSerial);
+    const label = `${item.name} (${serialsStr}) ${item.isIssued ? "[Issued]" : "[In Stock]"}`;
+
+    const optFrom = document.createElement("option");
+    optFrom.value = item.id;
+    optFrom.textContent = label;
+    if (item.id.toString() === currentFrom) optFrom.selected = true;
+    fromSelect.appendChild(optFrom);
+
+    const optTo = document.createElement("option");
+    optTo.value = item.id;
+    optTo.textContent = label;
+    if (item.id.toString() === currentTo) optTo.selected = true;
+    toSelect.appendChild(optTo);
+  });
+
+  updateBoxAccessoriesListForSource();
+}
+
+function updateBoxAccessoriesListForSource() {
+  const fromSelect = document.getElementById("t_from_set");
+  const accSelect = document.getElementById("t_accessory_item");
+  if (!fromSelect || !accSelect) return;
+
+  const sourceId = parseInt(fromSelect.value);
+  accSelect.innerHTML = '<option value="">-- Select Accessory to Transfer --</option>';
+
+  if (!sourceId) return;
+
+  const sourceItem = inventory.find((i) => i.id === sourceId);
+  if (sourceItem && sourceItem.boxItems && sourceItem.boxItems.length > 0) {
+    sourceItem.boxItems.forEach((b, idx) => {
+      if (b.qty > 0) {
+        const opt = document.createElement("option");
+        opt.value = idx;
+        opt.textContent = `${b.name} (Available in set: ${b.qty})`;
+        accSelect.appendChild(opt);
+      }
+    });
+  } else {
+    accSelect.innerHTML = '<option value="">No accessories available in this set</option>';
+  }
+}
+
+function processBoxTransfer(e) {
+  e.preventDefault();
+  const fromId = parseInt(document.getElementById("t_from_set").value);
+  const accIdx = parseInt(document.getElementById("t_accessory_item").value);
+  const toId = parseInt(document.getElementById("t_to_set").value);
+  const qty = 1;
+
+  if (!fromId || isNaN(accIdx) || !toId) {
+    alert("Please select source set, accessory, and destination set!");
+    return;
+  }
+
+  if (fromId === toId) {
+    alert("Source and destination equipment sets cannot be the same!");
+    return;
+  }
+
+  const sourceItem = inventory.find((i) => i.id === fromId);
+  const destItem = inventory.find((i) => i.id === toId);
+
+  if (!sourceItem || !destItem) {
+    alert("Selected equipment sets not found!");
+    return;
+  }
+
+  const accItem = sourceItem.boxItems[accIdx];
+  if (!accItem || accItem.qty < qty) {
+    alert(`Insufficient quantity! Only ${accItem ? accItem.qty : 0} available.`);
+    return;
+  }
+
+  accItem.qty -= qty;
+
+  if (!destItem.boxItems) destItem.boxItems = [];
+  const destAccIdx = destItem.boxItems.findIndex(
+    (b) => b.name.toLowerCase() === accItem.name.toLowerCase()
+  );
+
+  if (destAccIdx !== -1) {
+    destItem.boxItems[destAccIdx].qty += qty;
+  } else {
+    destItem.boxItems.push({
+      name: accItem.name,
+      qty: qty,
+      originalQty: qty,
+    });
+  }
+
+  const transferLog = {
+    id: Date.now(),
+    date: new Date().toISOString().slice(0, 10),
+    sourceSet: `${sourceItem.name} (${formatSerialText(sourceItem.serial, sourceItem.equipmentSerial)})`,
+    destSet: `${destItem.name} (${formatSerialText(destItem.serial, destItem.equipmentSerial)})`,
+    accessoryName: accItem.name,
+    qty: qty,
+  };
+
+  borrowedTransfers.push(transferLog);
+
+  saveData();
+  alert(`✅ Successfully transferred ${qty}x ${accItem.name} from ${sourceItem.name} to ${destItem.name}!`);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const fromSetEl = document.getElementById("t_from_set");
+  if (fromSetEl) {
+    fromSetEl.addEventListener("change", updateBoxAccessoriesListForSource);
+  }
+});

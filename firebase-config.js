@@ -23,6 +23,8 @@ let currentUserUID = null;
 let unsubInventory = null;
 let unsubLogs = null;
 let unsubTransfers = null;
+let unsubEmployees = null;
+let unsubAttendance = null;
 
 function initFirebase() {
   if (typeof firebase === "undefined") {
@@ -74,7 +76,8 @@ function initFirebase() {
             document.getElementById("activeUserEmail").textContent = user.email;
           }
           if (document.getElementById("sidebarActiveUserEmail")) {
-            document.getElementById("sidebarActiveUserEmail").textContent = user.email;
+            document.getElementById("sidebarActiveUserEmail").textContent =
+              user.email;
           }
 
           // Load local user data scoped uniquely, then start Firebase listeners
@@ -101,6 +104,8 @@ function initFirebase() {
           inventory = [];
           issueLogs = [];
           borrowedTransfers = [];
+          if (typeof employees !== "undefined") employees = [];
+          if (typeof attendanceLogs !== "undefined") attendanceLogs = [];
 
           if (typeof customSuggestions !== "undefined") customSuggestions = [];
           if (typeof currentTeamMembers !== "undefined")
@@ -146,9 +151,13 @@ function unsubscribeAll() {
   if (unsubInventory) unsubInventory();
   if (unsubLogs) unsubLogs();
   if (unsubTransfers) unsubTransfers();
+  if (unsubEmployees) unsubEmployees();
+  if (unsubAttendance) unsubAttendance();
   unsubInventory = null;
   unsubLogs = null;
   unsubTransfers = null;
+  unsubEmployees = null;
+  unsubAttendance = null;
 }
 
 // Realtime sync from Firebase Firestore isolated to currentUserUID
@@ -216,6 +225,45 @@ function setupRealtimeListeners() {
       console.error("Error listening to transfers:", error);
     },
   );
+
+  // Sync Employees
+  unsubEmployees = userDb.collection("asset_employees").onSnapshot(
+    (snapshot) => {
+      const remoteEmployees = [];
+      snapshot.forEach((doc) => {
+        remoteEmployees.push(doc.data());
+      });
+      employees = remoteEmployees;
+      localStorage.setItem(
+        `eq_employees_${currentUserUID}`,
+        JSON.stringify(employees),
+      );
+      if (typeof renderAll === "function") renderAll();
+    },
+    (error) => {
+      console.error("Error listening to employees:", error);
+    },
+  );
+
+  // Sync Attendance
+  unsubAttendance = userDb.collection("asset_attendance").onSnapshot(
+    (snapshot) => {
+      const remoteAttendance = [];
+      snapshot.forEach((doc) => {
+        remoteAttendance.push(doc.data());
+      });
+      remoteAttendance.sort((a, b) => b.id - a.id);
+      attendanceLogs = remoteAttendance;
+      localStorage.setItem(
+        `eq_attendance_${currentUserUID}`,
+        JSON.stringify(attendanceLogs),
+      );
+      if (typeof renderAll === "function") renderAll();
+    },
+    (error) => {
+      console.error("Error listening to attendance:", error);
+    },
+  );
 }
 
 // Sync local changes to Firebase Firestore isolated to currentUserUID
@@ -229,7 +277,6 @@ async function syncToFirebase() {
       const docRef = userDb.collection("asset_inventory").doc(String(item.id));
       invBatch.set(docRef, item, { merge: true });
     });
-    // For smaller batches, we can commit loops, but assuming < 500 items per batch
     await invBatch.commit();
 
     const logBatch = db.batch();
@@ -247,6 +294,20 @@ async function syncToFirebase() {
       transferBatch.set(docRef, transfer, { merge: true });
     });
     await transferBatch.commit();
+
+    const empBatch = db.batch();
+    employees.forEach((emp) => {
+      const docRef = userDb.collection("asset_employees").doc(String(emp.id));
+      empBatch.set(docRef, emp, { merge: true });
+    });
+    await empBatch.commit();
+
+    const attBatch = db.batch();
+    attendanceLogs.forEach((att) => {
+      const docRef = userDb.collection("asset_attendance").doc(String(att.id));
+      attBatch.set(docRef, att, { merge: true });
+    });
+    await attBatch.commit();
   } catch (err) {
     console.error("Error syncing data to Firebase:", err);
   }
